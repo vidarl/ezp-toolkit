@@ -20,6 +20,12 @@ echo -n "Upgrading db..."
 #sleep 5
 echo "Started!"
 
+if [ -f external/ezp-upgrade-toolkit/custom_pre_upgrade.sql ]; then
+    echo "custom_pre_upgrade.sql"
+    $mysqlcmd < external/ezp-upgrade-toolkit/custom_pre_upgrade.sql
+else
+    echo "Skipping custom_pre_upgrade.sql"
+fi
 
 echo "dbupdate-5.4.0-to-6.13.0.sql:"
 $mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-5.4.0-to-6.13.0.sql
