@@ -1,0 +1,82 @@
+version: '3.3'
+# Single server setup for dev
+
+services:
+  ezphp5:
+    build:
+      context: dockerfiles/ezphp
+    volumes:
+     - ${COMPOSE_DIR}/../../../:/var/www:cached
+     - ${COMPOSER_HOME}:/root/.composer:cached
+     - $HOME/.ssh/id_rsa:/id_rsa
+
+    environment:
+     - EZ_ENVIRONMENT
+     - EZ_MAILER_TRANSPORT
+     - EZ_MAILER_HOST
+     - EZ_MAILER_USER
+     - EZ_MAILER_PASSWORD
+     - SYMFONY_ENV
+     - MYSQL_PASSWORD
+
+  ezphp:
+    build:
+      context: dockerfiles/ezphp
+      dockerfile: Dockerfile-php7
+    volumes:
+      - ${COMPOSE_DIR}/../../../:/var/www:cached
+      - ${COMPOSER_HOME}:/root/.composer:cached
+      - $HOME/.ssh/id_rsa:/id_rsa
+
+    environment:
+      - EZ_ENVIRONMENT
+      - EZ_MAILER_TRANSPORT
+      - EZ_MAILER_HOST
+      - EZ_MAILER_USER
+      - EZ_MAILER_PASSWORD
+      - SYMFONY_ENV
+      - MYSQL_PASSWORD
+
+  web:
+    image: ezpublishplatform_web
+    build:
+      context: dockerfiles/nginx
+    # due to link, ezphp5 container might need to be renamed php_fpm....
+#    links:
+#     - phpfpm1:php_fpm
+    ports:
+     - "8080:80"
+    volumes:
+     - ${COMPOSE_DIR}/../../../:/var/www:cached
+    environment:
+     - EZ_ENVIRONMENT
+     - PHPFPM=ezphp
+     - SYMFONY_ENV=${SYMFONY_ENV-dev}
+
+  web5:
+    image: ezpublishplatform_web
+    build:
+      context: dockerfiles/nginx
+    # due to link, ezphp5 container might need to be renamed php_fpm....
+#    links:
+#     - phpfpm1:php_fpm
+    ports:
+     - "8081:80"
+    volumes:
+     - ${COMPOSE_DIR}/../../../:/var/www:cached
+    environment:
+     - EZ_ENVIRONMENT
+     - PHPFPM=ezphp5
+     - SYMFONY_ENV=${SYMFONY_ENV-dev}
+
+  db:
+    image: mariadb:latest
+    volumes:
+     - ./resources/0_database_character_set.sh:/docker-entrypoint-initdb.d/0_database_character_set.sh
+    environment:
+     - MYSQL_ROOT_PASSWORD=mysecretrootpassword
+     - MYSQL_USER=ezp
+     - MYSQL_PASSWORD
+     - MYSQL_DATABASE=ezp
+     - TERM=dumb
+

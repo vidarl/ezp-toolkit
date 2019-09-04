@@ -1,0 +1,6 @@
+ezpublish_legacy/var/ezflow_site/storage/
+vendor/
+ezpublish_legacy/
+node_modules/
+
+

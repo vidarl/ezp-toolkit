@@ -1,0 +1,9 @@
+version: '3.3'
+# Single server setup for dev
+
+services:
+  ezphp5:
+    environment:
+     - DEBUG_LOGGING=enabled
+    extra_hosts:
+      - "dockerhost:${DOCKERHOST}"
