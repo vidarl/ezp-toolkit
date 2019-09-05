@@ -1,0 +1,10 @@
+version: '3.3'
+
+services:
+  app:
+    image: ${PHP_IMAGE}-dev
+    environment:
+     - PHP_INI_ENV_xdebug__remote_host=dockerhost
+     - PHP_INI_ENV_xdebug__remote_port=9000
+    extra_hosts:
+      - "dockerhost:${DOCKERHOST}"

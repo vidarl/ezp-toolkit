@@ -111,3 +111,17 @@ Let's say you have installed eZ Publish Platform in `/home/phpdeveleoper/project
 To configure the directory mapping, press [Ctrl]-[Alt]-[s]. Next click `Languages & Frameworks` -> `PHP` -> `Servers`
 File/Directory : /home/phpdeveleoper/project/ezpsite
 Absolute path on the server : /var/www
+
+
+# Debugging eZ Platform with XDebug and PHPStorm
+
+Note : This chapter is about how to enabled debugging in eZ Platform, not eZ Publish Platform
+
+In `.env`, add following variable (substitute `192.168.0.1` with your real IP)
+
+```
+# Insert the IP your computer here. xdebug inside the container will try to reach phpstorm using this IP
+DOCKERHOST=192.168.0.1
+```
+
+Also, in `.env`, add `:external/ezp-toolkit/ezplatform/xdebug.yml` to `COMPOSE_FILE` variable
