@@ -88,6 +88,10 @@ echo "Section of Forms folder has changed, 'content/read' policy needed for anon
 
 echo "Configuration of custom tags has changed slightly : https://doc.ezplatform.com/en/2.5/updating/4_update_2.4/#changes-to-custom-tags"
 
+echo -e "\neZ Platform 2.5 issues"
+echo "Skipping migrating eZ matrix in case you want to use legacy bridge. More info : https://doc.ezplatform.com/en/2.5/updating/4_update_2.5/#changes-to-matrix-field-type"
+# bin/console ezplatform:migrate:legacy_matrix
+
 # Page builder is EE domain
 echo "Adding Page builder indexes: database/ezp25_pagebuilder_indexes.sql"
 $mysqlcmd < external/ezp-toolkit/database/ezp25_pagebuilder_indexes.sql
