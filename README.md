@@ -65,7 +65,8 @@ Add `auth.json` to installation directory with credentials for updates.ez.no, ne
 ```
     docker-compose exec -u www-data ezphp5 bash
     # Now, inside the container run:
-    COMPOSER_MEMORY_LIMIT=-1 composer install
+
+    COMPOSER_HOME="/tmp/.composer" COMPOSER_MEMORY_LIMIT=-1 composer install
 ```
 
 ## Run setup wizard
