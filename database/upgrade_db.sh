@@ -116,5 +116,11 @@ echo "For ezflow upgrade see:"
 echo "- https://doc.ezplatform.com/en/2.5/migrating/migrating_from_ez_publish_platform/#migrating-legacy-page-field-ezflow-to-new-page-enterprise"
 echo "- https://doc.ezplatform.com/en/2.5/updating/4_update_2.2/#migrate-landing-pages"
 
+echo -e "\nNote this script does not migrate ezxmltext --> richtext"
+echo "For ezxmltext to richttext see :"
+echo "- https://doc.ezplatform.com/en/2.5/migrating/migrating_from_ez_publish_platform/#321-migrate-xmltext-content-to-richtext"
+
+echo -e "\nDone. Remember to clear all caches, including Redis ( if you are using that )"
+
 # sql for setting standard admin pwd
 #update ezuser set password_hash='c78e3b0f3d9244ed8c6d1c29464bdff9', password_hash_type=2 where login='admin';
