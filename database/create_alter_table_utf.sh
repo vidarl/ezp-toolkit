@@ -5,6 +5,7 @@ if [ "$1" == "" ]; then
 fi
 filename=$1
 
+echo "SET FOREIGN_KEY_CHECKS=0;"
 while IFS='' read -r line || [[ -n "$line" ]]; do
     if [ $line == "Tables_in_main" ]; then
         continue;

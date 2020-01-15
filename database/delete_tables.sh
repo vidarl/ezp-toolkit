@@ -59,6 +59,6 @@ fi
 for t in $TABLES
 do
  echo "Deleting $t table from $MDB database..."
- $MYSQL -u $MUSER -p$MPASS -h $MHOST $MDB -e "drop table $t"
+ $MYSQL -u $MUSER -p$MPASS -h $MHOST $MDB -e "SET FOREIGN_KEY_CHECKS=0; drop table $t"
 done
 
