@@ -45,6 +45,9 @@ $mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-7.4.0-t
 echo "dbupdate-7.5.2-to-7.5.3.sql"
 $mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-7.5.2-to-7.5.3.sql
 
+echo "dbupdate-7.5.4-to-7.5.5.sql"
+$mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-7.5.4-to-7.5.5.sql
+
 if [ -f external/ezp-toolkit/custom_upgrade.sql ]; then
     echo "custom_upgrade.sql"
     $mysqlcmd < external/ezp-toolkit/custom_upgrade.sql
