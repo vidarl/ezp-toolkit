@@ -126,3 +126,65 @@ DOCKERHOST=192.168.0.1
 ```
 
 Also, in `.env`, add `:external/ezp-toolkit/ezplatform/xdebug.yml` to `COMPOSE_FILE` variable
+
+# Usefull commands
+
+Get some more tools in the app container
+
+```
+    docker-compose exec app bash
+    apt-get update; apt-get install -y vim less openssh-client procps mysql-client
+```
+
+Remove all cache if you use legacy bridge ( PS : your var_dir in legacy might be called ezflow_site or someting similar) :
+
+```
+    rm -Rf ezpublish_legacy/var/cache/* ezpublish_legacy/var/ezdemo_site/cache/* var/cache/*/*
+```
+
+
+## Typically things to do after installing legacy bridge
+
+```
+    # copy settings/override and settings/siteaccess to src/legacy_files/settings/
+
+    # Generate autoloads
+    cd ezpublish_legacy
+    php bin/php/ezpgenerateautoloads.php -e
+
+    # Run composer scripts once or twice :
+    composer symfony-scripts
+    composer symfony-scripts
+
+    # FYI : The above comands with among other things run (which makes symlinks from src/ to ezpublish_legacy/...:
+    # php bin/console ezpublish:legacy:symlink
+
+    # If you have custom extensions in src/AppBundle/ezpublish_legacy/, symlink them  using:
+    # php bin/console ezpublish:legacybundles:install_extensions
+
+    # Or run the following script (which will do all of this in one go)
+    composer legacy-scripts
+
+```
+
+Add the rewrite rules to `doc/nginx/ez_params.d/ez_rewrite_params` :
+
+```
+    (...)
+    rewrite "^/var/([^/]+/)?storage/images(-versioned)?/(.*)" "/var/$1storage/images$2/$3" break;
+    rewrite "^/var/([^/]+/)?cache/(texttoimage|public)/(.*)" "/var/$1cache/$2/$3" break;
+    rewrite "^/design/([^/]+)/(stylesheets|images|javascript|fonts)/(.*)" "/design/$1/$2/$3" break;
+    rewrite "^/share/icons/(.*)" "/share/icons/$1" break;
+    rewrite "^/extension/([^/]+)/design/([^/]+)/(stylesheets|flash|images|lib|javascripts?)/(.*)" "/extension/$1/design/$2/$3/$4" break;
+    rewrite "^/packages/styles/(.+)/(stylesheets|images|javascript)/([^/]+)/(.*)" "/packages/styles/$1/$2/$3/$4" break;
+    rewrite "^/packages/styles/(.+)/thumbnail/(.*)" "/packages/styles/$1/thumbnail/$2" break;
+    rewrite "^/var/storage/packages/(.*)" "/var/storage/packages/$1" break;
+
+    rewrite "^(.*)$" "/app.php$1" last;
+```
+
+And restart web container
+
+```
+    docker-compose stop web; docker-compose up -d
+```
