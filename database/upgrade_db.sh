@@ -34,9 +34,9 @@ echo -n "Upgrading db..."
 #sleep 5
 echo "Started!"
 
-if [ -f external/ezp-upgrade-toolkit/custom_pre_upgrade.sql ]; then
+if [ -f external/ezp-toolkit/custom_pre_upgrade.sql ]; then
     echo "custom_pre_upgrade.sql"
-    $mysqlcmd < external/ezp-upgrade-toolkit/custom_pre_upgrade.sql
+    $mysqlcmd < external/ezp-toolkit/custom_pre_upgrade.sql
 else
     echo "Skipping custom_pre_upgrade.sql"
 fi
