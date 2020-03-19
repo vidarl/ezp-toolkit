@@ -50,6 +50,7 @@ $mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-5.4.0-t
 
 echo "dbupdate-7.1.0-to-7.2.0.sql:"
 $mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-7.1.0-to-7.2.0.sql
+$mysqlcmd < external/ezp-toolkit/database/sql/dbupdate-7.1.0-to-7.2.0.sql
 
 echo "Skipping dbupdate-7.1.0-to-7.2.0-dfs.sql. Enable it if using DFS !!!!"
 #$mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-7.1.0-to-7.2.0-dfs.sql
