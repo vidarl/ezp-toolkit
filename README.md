@@ -188,3 +188,21 @@ And restart web container
 ```
     docker-compose stop web; docker-compose up -d
 ```
+
+# Install Ibexa DXP 3.3 and later in docker containers
+
+This repo contains a helper script for running Ibexa DXP in docker containers.
+
+Please note that `PHP` and `composer` needs to be install on host too ( as we need to do "composer create-project" before the docker-composer files which are able to do the rest is installed.
+
+## Usage
+
+- First clone this repos ( for instance in the subdirectory ezp-toolkit/ )
+- Make sure you have a `~/.composer/auth.json` which have credentials to updates.ibexa.co
+- Next, execute:
+  `./ezp-toolkit/ibexa/install_dxp.sh experience projectvtest vtest`
+  - `experience` is the flavour (content, experience, commerce)
+    - commerce not tested ATM
+  - `projectvtest` is the PROJECT_NAME used by docker-compose when naming the containers
+  - `vtest` is the target directory where the installation will be created
+
