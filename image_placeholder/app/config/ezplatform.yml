@@ -1,0 +1,16 @@
+# 2.5:
+ezpublish:
+# 3.x:
+#ezplatform:
+    image_placeholder:
+        default:
+            provider: generic
+            options:
+                # 2.5:
+                fontpath: '%kernel.project_dir%/app/Resources/font/OpenSans-Bold.ttf'
+                # 3.x:
+                #fontpath: '%kernel.project_dir%/src/font/OpenSans-Bold.ttf'
+                background: '#EEEEEE'
+                foreground: '#FF0000'
+                text: 'MISSING IMAGE %%width%%x%%height%%'
+
