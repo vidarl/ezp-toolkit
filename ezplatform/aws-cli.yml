@@ -1,0 +1,16 @@
+version: '3.3'
+
+services:
+    aws-cli:
+        image: vidarl/docker-aws-cli:latest
+        networks:
+            - backend
+        volumes:
+            - ~/.aws:/root/.aws #Should contain a config and credentials file
+            - ${COMPOSE_DIR}/../../:/var/www:cached
+        tty: true
+        working_dir: /var/www
+        #command: tail -f /dev/null
+
+
+    # aws s3 cp kake.txt s3://vidarrocks/vtest/kake.txt
