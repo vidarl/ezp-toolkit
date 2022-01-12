@@ -1,0 +1,10 @@
+version: '3.3'
+
+services:
+
+    redisinsight:
+        image: redislabs/redisinsight:latest
+        networks:
+            - backend
+        ports:
+            - "8001:8001"

@@ -1,14 +1,6 @@
 version: '3.3'
 
 services:
-
-    redisinsight:
-        image: redislabs/redisinsight:latest
-        networks:
-            - backend
-        ports:
-            - "8001:8001"
-
     redis:
         volumes:
             - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis.conf:/etc/redis/redis.conf
