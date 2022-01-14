@@ -1,5 +1,5 @@
---- doc/docker/install_script.sh.org	2021-05-18 13:09:56.602553900 +0200
-+++ doc/docker/install_script.sh	2021-05-18 13:44:58.112553900 +0200
+--- doc/docker/install_script_patched.sh.org	2021-05-18 13:09:56.602553900 +0200
++++ doc/docker/install_script_patched.sh	2021-05-18 13:44:58.112553900 +0200
 @@ -3,6 +3,17 @@
  # Dumping autoload using --optimize-autoloader to keep performenace on a usable level, not needed on linux host.
  # Second chown line:  For dev and behat tests we give a bit extra rights, never do this for prod.
@@ -29,3 +29,11 @@
      if [ "$APP_CMD" != '' ]; then
          echo '> Executing' "$APP_CMD"
          php bin/console $APP_CMD
+--- doc/docker/install-dependencies.yml.org        2021-12-17 13:38:36.464853300 +0000
++++ doc/docker/install-dependencies.yml    2021-12-17 13:40:23.194853300 +0000
+@@ -20,4 +20,4 @@
+      - COMPOSER_AUTH
+      - DATABASE_PLATFORM
+      - DATABASE_PORT
+-    command: ./doc/docker/install_script.sh
++    command: ./doc/docker/install_script_patched.sh

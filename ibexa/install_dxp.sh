@@ -8,16 +8,21 @@ set -e
 flavour=$1
 project_name=$2
 target_dir=$3
+version=$4
+
+if [ "$version" == "" ]; then
+    version=3.3.3
+fi
 
 YARN_WORKAROUND=y
 
 # Maybe this one is for <=3.2
 #export PHP_IMAGE=${4-ezsystems/php:7.4-v2-node12}
-export PHP_IMAGE=${4-ezsystems/php:7.4-v2-node14}
+export PHP_IMAGE=ezsystems/php:7.4-v2-node14
 
 COMPOSER_PATCH=`dirname $0`/composer_selfupdate.patch
 
-composer create-project --no-install --no-scripts ibexa/${flavour}-skeleton:3.3.3 $target_dir
+composer create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} $target_dir
 if [ -f ~/.composer/auth.json ]; then
     cp ~/.composer/auth.json $target_dir
 fi
@@ -48,12 +53,15 @@ composer recipes:install ibexa/docker --force
 if [ -f /usr/local/bin/composer ]; then
     cp /usr/local/bin/composer .
 fi
+
+# We need to make a copy and patch the copy because receips might change install_script.sh while we are executing it
+cp doc/docker/install_script.sh doc/docker/install_script_patched.sh
 patch -p0 < ../$COMPOSER_PATCH
 
 # git init; git add . > /dev/null;
 
-
 # Any change to .env file wil be overrwritten, so we need to write the changes to .env after this has completed:
+echo COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
 COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
 
 echo -e "\n###### local config ####" >> .env
