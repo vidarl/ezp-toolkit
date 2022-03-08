@@ -1,0 +1,86 @@
+version: '3.3'
+
+# https://www.developers-notebook.com/development/using-redis-sentinel-with-docker-compose/
+# https://doc.ibexa.co/en/latest/guide/persistence_cache/#ibexa-cloud-platformsh-usage
+# https://redis.io/topics/sentinel
+# https://redis.io/topics/sentinel-clients
+
+services:
+    redis-master:
+        image: redis:6-alpine
+        volumes:
+            - "./.data:/data"
+        ports:
+            - "6379:6379"
+        environment:
+            - ALLOW_EMPTY_PASSWORD=yes
+        network_mode: "host"
+
+    redis-slave:
+        image: redis:6-alpine
+        command: redis-server --slaveof 127.0.0.1 6379 --port 6380
+        volumes:
+            - "./.data:/data"
+        depends_on:
+            - redis-master
+        environment:
+            # Not sure if this one is needed
+            - ALLOW_EMPTY_PASSWORD=yes
+        network_mode: "host"
+
+    # Instance 1
+    redis-sentinel:
+        build:
+            context: ../../external/ezp-toolkit/ezplatform/redis-sentinel
+#        links:
+#            - redis-master
+        depends_on:
+            - redis-master
+        environment:
+            - SENTINEL_QUORUM=2
+            # Not sure if this one is needed
+            - ALLOW_EMPTY_PASSWORD=yes
+            - SENTINEL_PORT=16379
+        network_mode: "host"
+
+    # Instance 2
+    redis-sentinel2:
+        build:
+            context: ../../external/ezp-toolkit/ezplatform/redis-sentinel
+        depends_on:
+            - redis-master
+        environment:
+            - SENTINEL_QUORUM=2
+            # Not sure if this one is needed
+            - ALLOW_EMPTY_PASSWORD=yes
+            - SENTINEL_PORT=26379
+        network_mode: "host"
+
+    # Instance 2
+    redis-sentinel3:
+        build:
+            context: ../../external/ezp-toolkit/ezplatform/redis-sentinel
+        depends_on:
+            - redis-master
+        environment:
+            - SENTINEL_QUORUM=2
+            # Not sure if this one is needed
+            - ALLOW_EMPTY_PASSWORD=yes
+            - SENTINEL_PORT=36379
+        network_mode: "host"
+
+
+# PHP and Symfony do not store saving session in sentinel ATM
+# Only redis and redis cluster is supported : https://github.com/phpredis/phpredis/blob/develop/cluster.markdown#session-handler
+# Thus, the following won't work
+
+#    app:
+#        depends_on:
+#            - redis-sentinel
+#        environment:
+#            - SESSION_HANDLER_ID=ezplatform.core.session.handler.native_redis
+##            - SESSION_SAVE_PATH=tcp://host.docker.internal:16379?weight=1&timeout=2.0&database=0
+##            - SESSION_SAVE_PATH=tcp://host.docker.internal:16379?weight=1
+#        extra_hosts:
+#            - "host.docker.internal:host-gateway"
+
