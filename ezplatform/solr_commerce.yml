@@ -1,0 +1,14 @@
+version: '3.3'
+
+services:
+    app:
+        environment:
+        # Need to set this on ibexa DXP 3.3.x
+         - SOLR_CORE=collection1
+        # Needed for Commerce 3.3.x
+         - SOLR_DSN=http://solr:8983
+
+    solr:
+        build:
+            context: ../../
+            dockerfile: external/ezp-toolkit/ezplatform/Dockerfile-solr-commerce

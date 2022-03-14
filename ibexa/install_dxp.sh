@@ -27,6 +27,14 @@ if [ -f ~/.composer/auth.json ]; then
     cp ~/.composer/auth.json $target_dir
 fi
 
+if [ $flavour = "commerce" ]; then
+    echo Copying auth.json for commerce
+    if [ -f ~/.composer/auth.json.commerce ]; then
+        cp ~/.composer/auth.json $target_dir
+        cp ~/.composer/auth.json.commerce $target_dir/auth.json
+    fi
+fi
+
 cd $target_dir
 
 echo -e "\n### Local additions\npublic/assets\nide-twig.json\n#yarn\n.cache" >> .gitignore
