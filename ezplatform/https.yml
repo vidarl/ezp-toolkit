@@ -1,0 +1,14 @@
+version: '3.3'
+
+services:
+    https:
+        image: foxylion/nginx-self-signed-https:latest
+        environment:
+         - REMOTE_URL=http://web:80
+        networks:
+            - frontend
+        ports:
+            - "443:443"
+#    web:
+#        ports:
+#            - "80:80"
