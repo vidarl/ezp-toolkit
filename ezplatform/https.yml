@@ -9,6 +9,11 @@ services:
             - frontend
         ports:
             - "443:443"
+
+    app:
+        environment:
+         - TRUSTED_PROXIES=REMOTE_ADDR
+
 #    web:
 #        ports:
 #            - "80:80"
