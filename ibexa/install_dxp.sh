@@ -69,8 +69,8 @@ patch -p0 < ../$COMPOSER_PATCH
 # git init; git add . > /dev/null;
 
 # Any change to .env file wil be overrwritten, so we need to write the changes to .env after this has completed:
-echo COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
-COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
+echo COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose --env-file .env -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
+COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose --env-file .env -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
 
 echo -e "\n###### local config ####" >> .env
 echo "COMPOSE_PROJECT_NAME=$project_name" >> .env
@@ -78,8 +78,8 @@ echo "PHP_IMAGE=$PHP_IMAGE" >> .env
 echo "PHP_INI_ENV_memory_limit=356M" >> .env
 
 
-docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml down
-docker-compose up -d --force-recreate
+docker-compose --env-file .env -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml down
+docker-compose --env-file .env up -d --force-recreate
 
 docker-compose exec app rm -rf var/cache
 docker-compose exec app chown 1000:1000 -R .git config doc/docker/entrypoint/mysql/2_dump.sql public var
