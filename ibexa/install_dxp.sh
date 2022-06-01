@@ -1,36 +1,56 @@
 #!/bin/bash
 
-
-# usage : ./install_dxp.sh flavour project_name directory
+# usage : ./install_dxp.sh flavour project_name directory version
 
 set -e
 
 flavour=$1
 project_name=$2
-target_dir=$3
+target_dir=$PWD/$3
 version=$4
 
 if [ "$version" == "" ]; then
-    version=3.3.3
+    version=3.3.20
 fi
 
-YARN_WORKAROUND=y
 
-# Maybe this one is for <=3.2
-#export PHP_IMAGE=${4-ezsystems/php:7.4-v2-node12}
-export PHP_IMAGE=ezsystems/php:7.4-v2-node14
+# Maybe this one is for <=3.2 ?
+export PHP_IMAGE=${4-ezsystems/php:7.4-v2-node12}
 
-COMPOSER_PATCH=`dirname $0`/composer_selfupdate.patch
+if [[ "$version" =~ ^3.3 ]]; then
+    export PHP_IMAGE=ezsystems/php:7.4-v2-node14
+fi
 
-composer create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} $target_dir
+if [[ "$version" =~ ^4.1 ]]; then
+    export PHP_IMAGE=ezsystems/php:8.0-v2-node14
+fi
+
+echo Removing  container install_dxp if it already exists
+docker rm -v install_dxp || /bin/true
+
+mkdir $target_dir
+
+function composer_container() {
+    local extra_param
+    if [ $1 == "create-project" ]; then
+        extra_param=""
+    else
+        extra_param="--workdir /var/www "
+    fi
+
+    docker run $extra_param --rm --name install_dxp -t -i -u www-data --entrypoint composer --mount type=bind,source="$target_dir",target=/var/www $PHP_IMAGE $@
+}
+
+composer_container create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} /var/www
+
 if [ -f ~/.composer/auth.json ]; then
     cp ~/.composer/auth.json $target_dir
 fi
 
+
 if [ $flavour = "commerce" ]; then
     echo Copying auth.json for commerce
     if [ -f ~/.composer/auth.json.commerce ]; then
-        cp ~/.composer/auth.json $target_dir
         cp ~/.composer/auth.json.commerce $target_dir/auth.json
     fi
 fi
@@ -43,81 +63,42 @@ git init
 git add .
 git commit -m "Initial commit - create-project"
 
-cat >> update_composer.sh << EOF
-if [ -f /var/www/composer ]; then
-	cp /var/www/composer /usr/local/bin/composer
-else
-	composer selfupdate
-fi
-EOF
-chmod a+x update_composer.sh
 
-composer install --no-scripts
-composer require ibexa/docker --no-scripts
+composer_container install --no-scripts
+composer_container require ibexa/docker --no-scripts
 # Looks like the "--no-scripts" also prevents the recipes for ibexa/docker to execute properly
-composer recipes:install ibexa/docker --force
+composer_container recipes:install ibexa/docker --force
 
-# Copying in composer if available as "composer selfupdate" has rate limits
-if [ -f /usr/local/bin/composer ]; then
-    cp /usr/local/bin/composer .
-fi
+mkdir external; cd external; git clone git@github.com:vidarl/ezp-toolkit.git; cd ..
 
-# We need to make a copy and patch the copy because receips might change install_script.sh while we are executing it
-cp doc/docker/install_script.sh doc/docker/install_script_patched.sh
-patch -p0 < ../$COMPOSER_PATCH
+git add .env composer.json composer.lock symfony.lock bin/vhost.sh doc
+git commit -m "Installed ibexa/docker"
 
-# git init; git add . > /dev/null;
-
-# Any change to .env file wil be overrwritten, so we need to write the changes to .env after this has completed:
-echo COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
-COMPOSE_PROJECT_NAME=$project_name PHP_IMAGE=$PHP_IMAGE docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml up --abort-on-container-exit --force-recreate
-
-echo -e "\n###### local config ####" >> .env
-echo "COMPOSE_PROJECT_NAME=$project_name" >> .env
+echo -e "\n\n### Local modifications ###" >> .env
 echo "PHP_IMAGE=$PHP_IMAGE" >> .env
-echo "PHP_INI_ENV_memory_limit=356M" >> .env
+echo "COMPOSE_PROJECT_NAME=$project_name" >> .env
+echo -e "PHP_INI_ENV_memory_limit=600M\n" >> .env
 
 
-docker-compose -f doc/docker/install-dependencies.yml -f doc/docker/install-database.yml down
-docker-compose up -d --force-recreate
+docker-compose up -d --remove-orphans
+docker-compose exec --user www-data app composer install
 
-docker-compose exec app rm -rf var/cache
-docker-compose exec app chown 1000:1000 -R .git config doc/docker/entrypoint/mysql/2_dump.sql public var
-docker-compose exec app chown 1000:33 -R .git var public/var
-docker-compose exec app chmod a+x bin/console
+docker-compose exec --user www-data app php bin/console ibexa:install
+docker-compose exec --user www-data app php bin/console ibexa:graphql:generate-schema
 
-echo Trying to sleep 3 sec before updating composer
-sleep 3
-docker-compose exec app bash -c /var/www/update_composer.sh
+echo 'mysqldump -u $DATABASE_USER --password=$DATABASE_PASSWORD -h $DATABASE_HOST --add-drop-table --extended-insert  --protocol=tcp $DATABASE_NAME > doc/docker/entrypoint/mysql/2_dump.sql' > create_mysql_dump.sh
+docker-compose exec --user www-data app bash create_mysql_dump.sh
+rm create_mysql_dump.sh
 
-# If you get something like An unexpected error occurred: "https://registry.yarnpkg.com/@symfony/stimulus-bridge/-/stimulus-bridge-1.1.0.tgz: getaddrinfo EAI_AGAIN registry.yarnpkg.com".
-# then but "nameserver 8.8.8.8" in /etc/resolv.conf and re-execute command inside container
-
-# Temporary, use google DNS
-if [ "$YARN_WORKAROUND" == "y" ]; then
-    echo "Applying workaround for yarn ( dns resolving ) in container"
-    echo -e "nameserver 8.8.8.8\noptions ndots:0" > resolv.conf
-    docker-compose exec app cp /etc/resolv.conf /etc/resolv.conf.org
-    echo "cat resolv.conf > /etc/resolv.conf" > a.sh
-    chmod a+x a.sh
-    docker-compose exec app bash ./a.sh
-fi
-
-docker-compose exec --user www-data app composer run-script auto-scripts
-
-# Restore /etc/resolv.conf
-if [ "$YARN_WORKAROUND" == "y" ]; then
-    echo "cat /etc/resolv.conf.org > /etc/resolv.conf" > a.sh
-    docker-compose exec app bash ./a.sh
-fi
-
-# cleanup
-rm a.sh resolv.conf
-git rm -f update_composer.sh
-
-git commit -m "Ran recipes"
-#git add config/graphql/types/.gitignore
-#git commit -m "Added config/graphql/types/.gitignore"
-git commit bin/console -m "Fixed exec permission on bin/console"
 git commit .env -m "Added modifications to .env"
-git commit . -m "More recipes"
+
+docker-compose exec --user www-data app composer ibexa:setup --platformsh
+git add .platform.app.yaml .platform bin/platformsh_prestart_cacheclear.sh
+if [[ "$version" =~ ^4.1 ]]; then
+    git add config/packages/http.yaml
+fi
+
+git commit  -m "Installed platform.sh scripts"
+
+docker-compose exec --user www-data app composer run post-install-cmd
+
