@@ -69,7 +69,11 @@ composer_container require ibexa/docker --no-scripts
 # Looks like the "--no-scripts" also prevents the recipes for ibexa/docker to execute properly
 composer_container recipes:install ibexa/docker --force
 
-mkdir external; cd external; git clone git@github.com:vidarl/ezp-toolkit.git; cd ..
+if [ `whoami` == "vl" ]; then
+    mkdir external; cd external; git clone git@github.com:vidarl/ezp-toolkit.git; cd ..
+else
+    mkdir external; cd external; git clone https://github.com/vidarl/ezp-toolkit.git; cd ..
+fi
 
 git add .env composer.json composer.lock symfony.lock bin/vhost.sh doc
 git commit -m "Installed ibexa/docker"
