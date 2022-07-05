@@ -71,7 +71,7 @@ Add `auth.json` to installation directory with credentials for updates.ez.no, ne
 
 ## Run setup wizard
 
-Run setup wizard directly from [legacy](http://localhost:8082) ( using legacyapache container on port 8082)
+Run setup wizard directly from [legacy](http://localhost:8082) ( using legacyphpapache container on port 8082)
 http://localhost:8082
 
 Use the following db settings when asked by setup wizard:
