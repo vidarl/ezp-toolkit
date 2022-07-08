@@ -1,0 +1,8 @@
+ARG APACHE_IMAGE
+FROM ${APACHE_IMAGE}
+
+RUN a2enmod proxy_fcgi
+
+# Remove "!|fcgi://localhost/" from SetHandler argument. Only applicable when using unix socket, which we are not
+CMD /bin/bash -c "cd /var/www && cp doc/apache2/vhost.template doc/apache2/vhost_phpfpm.template && sed -i 's_|fcgi://localhost/__g' doc/apache2/vhost_phpfpm.template && bin/vhost.sh --template-file=doc/apache2/vhost_phpfpm.template > /etc/apache2/sites-available/000-default.conf && apache2-foreground"
+
