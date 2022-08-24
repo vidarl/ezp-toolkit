@@ -1,0 +1,30 @@
+version: '3.3'
+
+services:
+    app:
+        environment:
+            - APP_HTTP_CACHE=0
+            # Never do this in production if the app container is accesible for the public as well
+            # See https://ezplatform.com/security-advisories/ezsa-2020-002-unauthorised-cache-purge-with-misconfigured-fastly for more details how it could be abused
+            - TRUSTED_PROXIES=REMOTE_ADDR
+            - HTTPCACHE_PURGE_SERVER=http://varnish7
+            - HTTPCACHE_PURGE_TYPE=varnish
+
+    varnish7:
+        build:
+            context: ../../
+            dockerfile: external/ezp-toolkit/ezplatform/Dockerfile-varnish7.1
+        volumes:
+            # In order to easier customize the vcl
+            - ${COMPOSE_DIR}/../../vendor/ezsystems/ezplatform-http-cache/docs/varnish/vcl/varnish7.vcl:/etc/varnish/default.vcl
+        ports:
+            - "8081:80"
+        environment:
+            - VARNISH_MALLOC_SIZE=256m
+        depends_on:
+            - web
+            - app
+        networks:
+            - frontend
+            - backend
+        command: ["--acl-add", "app", "--debug-acl-add", "app"]

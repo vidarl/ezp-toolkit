@@ -1,0 +1,17 @@
+diff --git a/doc/docker/Dockerfile-varnish b/doc/docker/Dockerfile-varnish
+index 14ab852..02d511c 100644
+--- a/doc/docker/Dockerfile-varnish
++++ b/doc/docker/Dockerfile-varnish
+@@ -32,9 +32,11 @@ RUN set -xe \
+         && apt-get install -q -y --allow-unauthenticated --no-install-recommends varnish $buildDeps \
+         \
+     # Install varnish modules
+-        && curl -A "Docker" -o /tmp/varnish-modules.tar.gz -D - -L -s https://download.varnish-software.com/varnish-modules/varnish-modules-${VARNISH_MODULES_VERSION}.tar.gz \
++#        && curl -A "Docker" -o /tmp/varnish-modules.tar.gz -D - -L -s https://download.varnish-software.com/varnish-modules/varnish-modules-${VARNISH_MODULES_VERSION}.tar.gz \
++        && curl -A "Docker" -o /tmp/varnish-modules.tar.gz -D - -L -s https://github.com/varnish/varnish-modules/archive/refs/tags/${VARNISH_MODULES_VERSION}.tar.gz \
+         && tar zxpf /tmp/varnish-modules.tar.gz -C /tmp/ \
+         && cd /tmp/varnish-modules-${VARNISH_MODULES_VERSION} \
++        && ./bootstrap \
+         && ./configure \
+         && make \
+         # && make check \

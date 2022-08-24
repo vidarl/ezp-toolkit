@@ -1,0 +1,25 @@
+FROM varnish:7.1
+
+# set the user to root, and install build dependencies
+USER root
+RUN set -e; \
+    apt-get update; \
+    apt-get -y install $VMOD_DEPS /pkgs/*.deb; \
+    \
+# install one, possibly multiple vmods
+   install-vmod https://github.com/varnish/varnish-modules/releases/download/0.20.0/varnish-modules-0.20.0.tar.gz; \
+    \
+# clean up and set the user back to varnish
+# VL : Removed next line, as it will remove varnish as well...
+#    apt-get -y purge --auto-remove $VMOD_DEPS varnish-dev; \
+    rm -rf /var/lib/apt/lists/*
+
+COPY vendor/ezsystems/ezplatform-http-cache/docs/varnish/vcl/varnish7.vcl /etc/varnish/default.vcl
+COPY doc/docker/entrypoint/varnish/parameters.vcl /etc/varnish/parameters.vcl
+COPY doc/docker/entrypoint/varnish/entrypoint.sh /entrypoint.sh
+
+# VL : our entrypoint.sh requires root access
+#USER varnish
+USER root
+
+ENTRYPOINT ["/entrypoint.sh"]
