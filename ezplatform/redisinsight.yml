@@ -8,3 +8,6 @@ services:
             - backend
         ports:
             - "8001:8001"
+        # If you need to to import an .rds, this mount will make that easier...
+        #volumes:
+            # - ${COMPOSE_DIR}/../..:/var/www
