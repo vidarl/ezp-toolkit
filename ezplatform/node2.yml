@@ -1,0 +1,115 @@
+version: '3.3'
+
+# cluster server setup for dev
+# Depends on doc/docker/dfs.yml
+
+# After getting containers up>
+# - sudo chmod a+rwx node2/var
+# - Inside app2 container, as root :
+#   docker-compose exec  app2 bash
+#   chown www-data:www-data -R public/var
+#
+# clusterize :
+# - clear symfony cache
+# - php bin/console ibexa:io:migrate-files
+#   - When running that command, correct adapters should be selected
+#       - no? did you clear cache..... ?
+#  - Remove files in public/var
+# - clear both symfony and redis cache
+
+# unclusterize (not tested yet ):
+# - php bin/console ibexa:io:migrate-files --from=dfs,nfs --to=default,default
+# - Remove dfs config
+# - clear symfony and redis cache
+
+
+
+
+services:
+#    app2:
+#        image: debian:stretch-slim
+    app2:
+        image: ${PHP_IMAGE}
+        volumes:
+            - ${COMPOSE_DIR}/../..:/var/www:cached
+            - ${COMPOSE_DIR}/../../node2/var:/var/www/var:cached
+            - ${COMPOSE_DIR}/../../node2/public/var:/var/www/public/var:cached
+            - ${COMPOSER_HOME}:/root/.composer:cached
+            # dfs
+            - ../../dfsdata:/dfsdata
+        depends_on:
+            - db
+            - redis
+            - redis-session
+            - solr
+            - varnish
+            # dfs
+            - dfsperm
+        environment:
+            - COMPOSER_MEMORY_LIMIT
+            - ENABLE_XDEBUG
+            - EZPLATFORM_SITEACCESS
+            - PHP_INI_ENV_memory_limit
+            - SYMFONY_ENV=${SYMFONY_ENV-dev}
+            - SYMFONY_DEBUG
+            - SYMFONY_HTTP_CACHE
+            - SYMFONY_TRUSTED_PROXIES
+            - DATABASE_USER
+            - DATABASE_PASSWORD
+            - DATABASE_NAME
+            - DATABASE_HOST=db
+            - RECOMMENDATIONS_CUSTOMER_ID
+            - RECOMMENDATIONS_LICENSE_KEY
+            - PUBLIC_SERVER_URI
+            - HTTPCACHE_VARNISH_INVALIDATE_TOKEN
+            - FASTLY_SERVICE_ID
+            - FASTLY_KEY
+            - XDEBUG_CONFIG
+            # varnish
+            - APP_HTTP_CACHE=0
+            - TRUSTED_PROXIES=REMOTE_ADDR
+            - HTTPCACHE_PURGE_SERVER=http://varnish7
+            - HTTPCACHE_PURGE_TYPE=varnish
+            - HTTPCACHE_VARNISH_INVALIDATE_TOKEN=mysecret
+            # solr
+            - SEARCH_ENGINE=solr
+            - SOLR_DSN=http://solr:8983/solr
+            - SOLR_CORE=collection1
+            # redis
+            - CACHE_POOL=cache.redis
+            - CACHE_DSN=redis:6379
+            - CACHE_NAMESPACE
+            # redis-session
+            - SESSION_HANDLER_ID=ezplatform.core.session.handler.native_redis
+            - SESSION_SAVE_PATH=tcp://redis-session:6379?weight=1
+            # dfs
+            - DFS_NFS_PATH=/dfsdata
+        networks:
+            - backend
+
+    web2:
+        image: ${NGINX_IMAGE}
+        volumes:
+            - ${COMPOSE_DIR}/../../:/var/www:ro,cached
+            - ${COMPOSE_DIR}/../../node2/var:/var/www/var:cached
+        depends_on:
+            - app2
+        ports:
+            - "8090:80"
+        environment:
+            - SYMFONY_ENV=${SYMFONY_ENV-dev}
+            - MAX_BODY_SIZE=20
+            - FASTCGI_PASS=app2:9000
+            - TIMEOUT=190
+            # dfs
+            - BINARY_DATA_HANDLER=dfs
+        command: /bin/bash -c "cd /var/www && cp -a doc/nginx/ez_params.d /etc/nginx && bin/vhost.sh --template-file=doc/nginx/vhost.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+        networks:
+            - frontend
+            - backend
+
+    # To prevent the dfsperm container to create a "default" network
+    dfsperm:
+        networks:
+            - backend
+
