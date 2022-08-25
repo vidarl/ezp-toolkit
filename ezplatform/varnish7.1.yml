@@ -9,6 +9,8 @@ services:
             - TRUSTED_PROXIES=REMOTE_ADDR
             - HTTPCACHE_PURGE_SERVER=http://varnish7
             - HTTPCACHE_PURGE_TYPE=varnish
+            # enable invalidate token:
+            # - HTTPCACHE_VARNISH_INVALIDATE_TOKEN=mysecret
 
     varnish7:
         build:
