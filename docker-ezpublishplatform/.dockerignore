@@ -3,4 +3,10 @@ vendor/
 ezpublish_legacy/
 node_modules/
 
+var/cache/
+public/
+.cache/
+
+
+
 

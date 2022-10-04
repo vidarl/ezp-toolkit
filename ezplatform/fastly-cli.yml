@@ -1,0 +1,33 @@
+version: '3.3'
+
+# Suggestion: Do this before building in order to save some time :
+# cp external/ezp-toolkit/docker-ezpublishplatform/.dockerignore .
+services:
+    fastly-cli:
+        build:
+            context: ../../
+            dockerfile: external/ezp-toolkit/ezplatform/Dockerfile-fastly-cli
+#        image: debian
+        environment:
+         - FASTLY_SERVICE_ID
+         - FASTLY_API_TOKEN=${FASTLY_KEY}
+        volumes:
+            - ${COMPOSE_DIR}/../../:/var/www:ro,cached
+        command: /bin/bash -c "while [ 1 ]; do echo -n .; sleep 60; done"
+
+
+# Upload a updated version of vcl:
+# fastly service-version list
+
+# fastly service-version clone --version=active
+# fastly vcl custom update --name=ez_main.vcl --version=latest --content=vendor/ezsystems/ezplatform-http-cache-fastly/fastly/ez_main.vcl
+# fastly service-version update --version=52 --comment="..."
+# fastly service-version activate --version=52
+#
+# or
+#
+# fastly vcl custom update --name=ez_main.vcl --version=active --autoclone --content=vendor/ezsystems/ezplatform-http-cache-fastly/fastly/ez_main.vcl
+# fastly service-version update --version=latest --comment="..."
+# fastly service-version activate --version=latest
+#
+# fastly purge --all
