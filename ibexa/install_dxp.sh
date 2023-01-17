@@ -15,7 +15,7 @@ fi
 
 
 # Maybe this one is for <=3.2 ?
-export PHP_IMAGE=${4-ezsystems/php:7.4-v2-node12}
+export PHP_IMAGE=ezsystems/php:7.4-v2-node12
 
 if [[ "$version" =~ ^3.3 ]]; then
     export PHP_IMAGE=ezsystems/php:7.4-v2-node14
@@ -25,8 +25,20 @@ if [[ "$version" =~ ^4.1 ]]; then
     export PHP_IMAGE=ezsystems/php:8.0-v2-node14
 fi
 
+if [[ "$version" =~ ^4.2 ]]; then
+    export PHP_IMAGE=ezsystems/php:8.0-v2-node14
+fi
+
+if [[ "$version" =~ ^4.3 ]]; then
+    export PHP_IMAGE=ezsystems/php:8.0-v2-node14
+fi
+
 echo Removing  container install_dxp if it already exists
 docker rm -v install_dxp || /bin/true
+
+if [ -d $target_dir ]; then
+    rmdir $target_dir
+fi
 
 mkdir $target_dir
 
@@ -38,6 +50,7 @@ function composer_container() {
         extra_param="--workdir /var/www "
     fi
 
+    echo docker run $extra_param --rm --name install_dxp -t -i -u www-data --entrypoint composer --mount type=bind,source="$target_dir",target=/var/www $PHP_IMAGE $@
     docker run $extra_param --rm --name install_dxp -t -i -u www-data --entrypoint composer --mount type=bind,source="$target_dir",target=/var/www $PHP_IMAGE $@
 }
 
