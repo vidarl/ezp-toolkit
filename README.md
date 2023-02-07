@@ -206,3 +206,37 @@ This repo contains a helper script for running Ibexa DXP in docker containers.
   - '3.3.21' is the version you want to install
  
 
+# Install Ibexa DXP 4.x on platform.sh
+
+- Install Ibexa DXP locally
+- Create a project on platform.sh
+- Install the platform.sh config files
+  ```
+  composer ibexa:setup --platformsh
+  ```
+- Find the project ID
+  ```
+  platform projects
+  ```
+- Add the platform.sh git remote
+  ```
+  platform project:set-remote <project ID>
+  ```
+- Add your Ibexa credentionals to the platform.sh project
+  ```
+  platform variable:create --level project --name env:COMPOSER_AUTH \
+  --json true --visible-runtime false --sensitive true --visible-build true \
+  --value '{ "http-basic": { "updates.ez.no": { "username": "...", "password": "..." }, "updates.ibexa.co": { "username": "...", "password": "..." } }, "github-oauth": { "github.com": "..." } }'
+  ```
+- Check which environments you have available:
+  ```
+  platform environments -p <project ID>
+  ```
+- Typically, at least have one project named `main` is available. On elder platform.sh projects, the environment may be called `master` or `production`
+  ```
+  git push -u platform main
+  ```
+- Obtain the URL to the deployment
+  ```
+  platform environment:url -e main
+  ```
