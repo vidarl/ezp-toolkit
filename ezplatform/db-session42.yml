@@ -1,0 +1,27 @@
+version: '3.3'
+# Config for having sessions in separate redis instance, to be appended after base-prod or base-dev, ..., but before selenium.yml
+
+## WARNING:
+# This service is currently work in progress, is not tested by CI, and thus not guaranteed to work.
+# You are however more then welcome to try it out and help make it stable.
+
+# IMPORTANT
+# Requires you to define the following service:
+#    Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+#        arguments:
+#            - '%env(DATABASE_URL)%'
+
+# And that you create the following db table, ref https://symfony.com/doc/current/session/database.html#mariadb-mysql
+#    CREATE TABLE `sessions` (
+#    `sess_id` VARBINARY(128) NOT NULL PRIMARY KEY,
+#    `sess_data` BLOB NOT NULL,
+#    `sess_lifetime` INTEGER UNSIGNED NOT NULL,
+#    `sess_time` INTEGER UNSIGNED NOT NULL,
+#    INDEX `sessions_sess_lifetime_idx` (`sess_lifetime`)
+#    ) COLLATE utf8mb4_bin, ENGINE = InnoDB;
+
+services:
+  app:
+    environment:
+     - SESSION_HANDLER_ID=Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+
