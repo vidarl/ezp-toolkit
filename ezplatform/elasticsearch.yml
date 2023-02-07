@@ -1,5 +1,25 @@
 version: '3.3'
 
+# # Installation:
+# - Add external/ezp-toolkit/ezplatform/elasticsearch.yml to COMPOSE_FILE
+# - php bin/console ibexa:elasticsearch:put-index-template
+# - php bin/console ibexa:reindex
+#
+# If you by accident run ibexa:index before ibexa:elasticsearch:put-index-template:
+# - curl -XDELETE 'localhost:9200/*'
+# Ref. https://issues.ibexa.co/browse/IBX-3758
+#
+#
+# # Disable binary file indexing.
+# If you do not want binary file indexing ( requires java ) :
+# config/packages/app/binary_files:
+# ibexa_platform_commerce_field_types:
+#     binary_file_indexing:
+# -        enabled: true
+# +        enabled: false
+
+    yaml:
+
 services:
     app:
         environment:
