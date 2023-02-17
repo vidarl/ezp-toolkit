@@ -1,0 +1,10 @@
+version: '3.3'
+
+# Strongly recommended to add .ssh to .gitignore file...
+
+services:
+    app:
+        environment:
+            - COMPOSER_HOME=~/.composer
+        volumes:
+            - ~/.ssh:/var/www/.ssh
