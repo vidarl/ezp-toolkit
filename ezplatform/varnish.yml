@@ -5,6 +5,7 @@ services:
         volumes:
             # In order to easier customize the vcl
             - ${COMPOSE_DIR}/../../vendor/ezsystems/ezplatform-http-cache/docs/varnish/vcl/varnish5.vcl:/etc/varnish/default.vcl
+    app:
         # enable invalidate token:
 #        environment:
 #            - HTTPCACHE_VARNISH_INVALIDATE_TOKEN=mysecret
