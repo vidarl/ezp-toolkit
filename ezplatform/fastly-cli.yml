@@ -12,9 +12,10 @@ services:
          - FASTLY_SERVICE_ID
          - FASTLY_API_TOKEN=${FASTLY_KEY}
         volumes:
-            - ${COMPOSE_DIR}/../../:/var/www:ro,cached
+            - ${COMPOSE_DIR}/../../:/var/www:cached
         command: /bin/bash -c "while [ 1 ]; do echo -n .; sleep 60; done"
-
+        networks:
+         - backend
 
 # Upload a updated version of vcl:
 # fastly service-version list
