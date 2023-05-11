@@ -1,0 +1,38 @@
+version: '3.3'
+
+# https://blackfire.io/docs/up-and-running/docker
+
+# Installation
+# You need to add this to .env:
+#  BLACKFIRE_SERVER_ID=....
+#  BLACKFIRE_SERVER_TOKEN=....
+#
+# Add :external/ezp-toolkit/ezplatform/blackfire.yml to COMPOSE_FILE= line in .env
+#
+# Re-create app container
+#  docker-compose up -d --remove-orphans
+#
+# Upgrade blackfire inside container
+#  docker-compose exec app bash -c "install_blackfire.sh"
+# You may ignore message about "could not restart blackfire-agent service"
+#
+# Since the blackfire PHP extension has been replaced with a new one, you need to restart app container
+# docker-compose stop app; docker-compose up -d --remove-orphans
+
+
+
+
+
+# Note : Every time the container is *started* you need to run the commands:
+#  docker-compose exec app bash -c "install_blackfire.sh"
+# install_blackfire.sh
+
+services:
+    app:
+        environment:
+            - BLACKFIRE_SERVER_ID
+            - BLACKFIRE_SERVER_TOKEN
+#          - BLACKFIRE_CLIENT_ID
+#          - BLACKFIRE_CLIENT_TOKEN
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/install_blackfire.sh:/usr/local/bin/install_blackfire.sh
