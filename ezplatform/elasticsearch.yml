@@ -18,8 +18,6 @@ version: '3.3'
 # -        enabled: true
 # +        enabled: false
 
-    yaml:
-
 services:
     app:
         environment:
