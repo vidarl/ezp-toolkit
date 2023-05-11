@@ -1,6 +1,16 @@
 version: '3.3'
 
 # Strongly recommended to add .ssh to .gitignore file...
+#
+# If you have no ssh and ssh-agent inside the container
+# docker-compose exec app bash
+#  apt-get update
+#  apt-get install ssh-client
+#
+# Then remember to run ssh-agent before running a upgrade using composer
+# docker-compose exec --user www-data app bash
+#  eval "$(ssh-agent -s)"
+#  ssh-add ~/.ssh/id_rsa
 
 services:
     app:
