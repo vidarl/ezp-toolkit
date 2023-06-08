@@ -189,6 +189,166 @@ And restart web container
     docker-compose stop web; docker-compose up -d
 ```
 
+# Install eZ Platform 2.5 with legacy bridge
+
+```
+  git clone https://github.com/ezsystems/ezplatform-ee.git ezp25lb
+  cd ezp25lb
+  git checkout v2.5.31
+  git checkout -b v2.5.31_branch
+
+  git clone https://github.com/ezsystems/ezplatform-ee-demo.git ezp25lb
+  cd ezp25lb
+  git checkout v2.5.14
+  git checkout -b v2.5.14_branch
+
+  vi .env
+    -PHP_IMAGE=ezsystems/php:7.4-v2-node10
+    +PHP_IMAGE=ezsystems/php:7.3-v2-node10
+    COMPOSE_PROJECT_NAME=ezp25lb
+
+
+  docker-compose up -d --remove-orphans
+  docker-compose exec app bash
+    export COMPOSER_HOME=/tmp/kake
+    composer self-update 2.2.10
+    ( see https://github.com/composer/composer/issues/10671 for details )
+
+  # next step not needed with composer 2.2.10
+  vi composer.json
+    "repositories": [
+        {
+            "type": "composer",
+-            "url": "https://updates.ez.no/ttl"
++            "url": "https://updates.ez.no/ttl",
++            "canonical": false
+        }
+    ],
+
+   ( See https://getcomposer.org/doc/articles/repository-priorities.md for details )
+
+
+  cp ~/.composer/auth.json .
+  docker-compose exec --user www-data app bash
+
+    export COMPOSER_HOME=/tmp/.composer
+    composer require ezsystems/legacy-bridge:^2.1 -W  --no-scripts
+
+
+  git clone git@github.com:vidarl/ezp-toolkit.git external/ezp-toolkit
+  vi .env
+   -COMPOSE_FILE=doc/docker/base-dev.yml
+   +COMPOSE_FILE=doc/docker/base-dev.yml:external/ezp-toolkit/ezplatform/apache-legacy.yml
+  vi .dockerignore
+   dumps/
+   ezpublish_legacy/var/ezflow_site/storage/
+   vendor/
+   ezpublish_legacy/
+   ezpublish_legacy.composer/
+   node_modules/
+   vendor.old/
+
+  docker-compose up -d --remove-orphans
+```
+
+## Run legacy setup wizard
+
+Access http://localhost:8079
+
+## Enable Legacy bridge and XML Fieldtype in symfony stack
+
+Add in `app/AppKernel.php`:
+```
+  new AppBundle\AppBundle(),
+  +new eZ\Bundle\EzPublishLegacyBundle\EzPublishLegacyBundle( $this ),
+```
+
+Execute legacy bridge init script:
+```
+  php bin/console ezpublish:legacy:init
+```
+Do as instructed by `ezpublish:legacy:init` command:
+
+```
+  composer symfony-scripts
+  git add src/legacy_files
+```
+
+More information is available at https://github.com/ezsystems/LegacyBridge/blob/master/INSTALL.md
+
+## Upgrade DB
+
+- Remove `$mysqlcmd < vendor/ezsystems/ezpublish-kernel/data/update/mysql/dbupdate-7.2.0-to-7.3.0.sql` from `external/ezp-toolkit/database/upgrade_db.sh`
+- Copy `external/ezp-toolkit/database/legacy25_to_symfony25.sql.dist` to `external/ezp-toolkit/database/legacy25_to_symfony25.sql`
+
+## Configuration
+
+- Add this snippet to `app/config/ezplatform.yml``:
+```
+ez_publish_legacy:
+    #    clear_all_spi_cache_on_symfony_clear_cache: false
+    #    clear_all_spi_cache_from_legacy: false
+    system:
+        #        site_admin:
+        #        admin:
+        #           legacy_mode: true
+        ezdemo_site:
+            legacy_mode: true
+        ezdemo_site_admin:
+            legacy_mode: true
+```
+- Add `eng`, `ezdemo_site` and `ezdemo_site_admin` to the siteaccess list in `app/config/ezplatform.yml`
+- Set `eng` as default siteaccess in `app/config/ezplatform.yml`
+- Add the following config if you have ezflow blocks (`ezpage` field type), and want to admin-ui to work:
+  ```
+  ezpublish:
+      system:
+          global:
+              ezpage:
+                  layouts:
+                      GlobalZoneLayout:
+                          name: Global zone layout
+                          template: globalzonelayout.tpl
+                      2ZonesLayout1:
+                          name: 2 zones (layout 1)
+                          template: 2zoneslayout1.tpl
+                      2ZonesLayout2:
+                          name: 2 zones (layout 2)
+                          template: 2zoneslayout2.tpl
+                      2ZonesLayout3:
+                          name: 2 zones (layout 3)
+                          template: 2zoneslayout3.tpl
+                      3ZonesLayout1:
+                          name: 3 zones (layout 1)
+                          template: 3zoneslayout1.tpl
+                      3ZonesLayout2:
+                          name: 3 zones (layout 2)
+                          template: 3zoneslayout2.tpl
+                      CallForActionLayout:
+                          name: Call For Action zone layout
+                          template: callforactionlayout.tpl
+  ```
+  - See `vendor/ezsystems/ezpublish-kernel/eZ/Bundle/EzPublishCoreBundle/Resources/config/default_settings.yml` and `vendor/ezsystems/ezpublish-kernel/eZ/Bundle/EzPublishCoreBundle/DependencyInjection/Configuration/Parser/Page.php` for more info.
+- `mv ezpublish_legacy/settings/siteaccess/ezdemo_site* ezpublish_legacy/settings/siteaccess/eng src/legacy_files/settings/siteaccess`
+- `php bin/console ezpublish:legacy:symlink`
+- Add the following code above the last line in `./doc/nginx/ez_params.d/ez_rewrite_params`
+  ```
+    # LB
+    rewrite "^/var/([^/]+/)?storage/images(-versioned)?/(.*)" "/var/$1storage/images$2/$3" break;
+    rewrite "^/var/([^/]+/)?cache/(texttoimage|public)/(.*)" "/var/$1cache/$2/$3" break;
+    rewrite "^/design/([^/]+)/(stylesheets|images|javascript|fonts)/(.*)" "/design/$1/$2/$3" break;
+    rewrite "^/share/icons/(.*)" "/share/icons/$1" break;
+    rewrite "^/extension/([^/]+)/design/([^/]+)/(stylesheets|flash|images|lib|javascripts?)/(.*)" "/extension/$1/design/$2/$3/$4" break;
+    rewrite "^/packages/styles/(.+)/(stylesheets|images|javascript)/([^/]+)/(.*)" "/packages/styles/$1/$2/$3/$4" break;
+    rewrite "^/packages/styles/(.+)/thumbnail/(.*)" "/packages/styles/$1/thumbnail/$2" break;
+    rewrite "^/var/storage/packages/(.*)" "/var/storage/packages/$1" break;
+```
+- `docker-compose stop web; docker-compose up -d --remove-orphans`
+
+
+
+
+
 # Install Ibexa DXP 3.3 and later in docker containers
 
 This repo contains a helper script for running Ibexa DXP in docker containers.
