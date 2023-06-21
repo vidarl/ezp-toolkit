@@ -30,7 +30,15 @@ if [[ "$version" =~ ^4.2 ]]; then
 fi
 
 if [[ "$version" =~ ^4.3 ]]; then
-    export PHP_IMAGE=ezsystems/php:8.0-v2-node14
+    export PHP_IMAGE=ezsystems/php:8.1-v2-node14
+fi
+
+if [[ "$version" =~ ^4.4 ]]; then
+    export PHP_IMAGE=ezsystems/php:8.1-v2-node14
+fi
+
+if [[ "$version" =~ ^4.5 ]]; then
+    export PHP_IMAGE=ezsystems/php:8.1-v2-node14
 fi
 
 echo Removing  container install_dxp if it already exists
