@@ -21,6 +21,10 @@ if [[ "$version" =~ ^3.3 ]]; then
     export PHP_IMAGE=ezsystems/php:7.4-v2-node14
 fi
 
+if [[ "$version" =~ ^4.0 ]]; then
+    export PHP_IMAGE=ezsystems/php:8.0-v2-node14
+fi
+
 if [[ "$version" =~ ^4.1 ]]; then
     export PHP_IMAGE=ezsystems/php:8.0-v2-node14
 fi
@@ -63,6 +67,11 @@ function composer_container() {
 }
 
 composer_container create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} /var/www
+
+if [[ "$version" =~ ^4.0 ]]; then
+    composer_container config extra.symfony.endpoint "https://api.github.com/repos/ibexa/recipes/contents/index.json?ref=flex/main"
+fi
+
 
 if [ -f ~/.composer/auth.json ]; then
     cp ~/.composer/auth.json $target_dir
