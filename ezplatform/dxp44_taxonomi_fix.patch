@@ -1,0 +1,13 @@
+--- vendor/ibexa/taxonomy/src/lib/Persistence/Entity/TaxonomyEntry.php.org	2023-10-17 15:40:41.705217600 +0200
++++ vendor/ibexa/taxonomy/src/lib/Persistence/Entity/TaxonomyEntry.php	2023-10-17 15:40:47.525217600 +0200
+@@ -109,8 +109,9 @@
+ 
+     /**
+      * Workaround to the issue in Gedmo Tree implementation where it tries to access public property $sibling.
++     * Additional workaround for https://github.com/ibexa/taxonomy/pull/216
+      */
+-    public ?TaxonomyEntry $sibling;
++    public ?TaxonomyEntry $sibling = null;
+ 
+     public function getId(): int
+     {

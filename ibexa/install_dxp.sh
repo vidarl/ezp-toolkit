@@ -39,6 +39,7 @@ fi
 
 if [[ "$version" =~ ^4.4 ]]; then
     export PHP_IMAGE=ezsystems/php:8.1-v2-node14
+    patch_44=0
 fi
 
 if [[ "$version" =~ ^4.5 ]]; then
@@ -64,6 +65,13 @@ function composer_container() {
 
     echo docker run $extra_param --rm --name install_dxp -t -i -u www-data --entrypoint composer --mount type=bind,source="$target_dir",target=/var/www $PHP_IMAGE $@
     docker run $extra_param --rm --name install_dxp -t -i -u www-data --entrypoint composer --mount type=bind,source="$target_dir",target=/var/www $PHP_IMAGE $@
+}
+
+function patch_dxp44() {
+    if [[ "$version" =~ ^4.4 ]]; then
+        echo "Patching for DXP 4.4, Taxonomi"
+        patch -p0 < external/ezp-toolkit/ezplatform/dxp44_taxonomi_fix.patch
+    fi
 }
 
 composer_container create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} /var/www
@@ -116,6 +124,8 @@ echo -e "PHP_INI_ENV_memory_limit=600M\n" >> .env
 
 docker-compose up -d --remove-orphans
 docker-compose exec --user www-data app composer install
+
+patch_dxp44
 
 docker-compose exec --user www-data app php bin/console ibexa:install
 docker-compose exec --user www-data app php bin/console ibexa:graphql:generate-schema
