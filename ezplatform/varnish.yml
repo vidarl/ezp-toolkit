@@ -1,5 +1,9 @@
 version: '3.3'
 
+# In order to build varnish container, change doc/docker/Dockerfile-varnish b/doc/docker/Dockerfile-varnish
+#-        && apt-get install -q -y --allow-unauthenticated --no-install-recommends varnish=6.0.11-1~bullseye $buildDeps \
+#+        && apt-get install -q -y --allow-unauthenticated --no-install-recommends varnish=6.0.12-1~bullseye $buildDeps \
+
 services:
     varnish:
         volumes:
