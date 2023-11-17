@@ -8,7 +8,11 @@ services:
     varnish:
         volumes:
             # In order to easier customize the vcl
+            # 3.3:
             - ${COMPOSE_DIR}/../../vendor/ezsystems/ezplatform-http-cache/docs/varnish/vcl/varnish5.vcl:/etc/varnish/default.vcl
+            # 4.5:
+            - ${COMPOSE_DIR}/../../vendor/ibexa/http-cache/docs/varnish/vcl/varnish5.vcl:/etc/varnish/default.vcl
+
     app:
         # enable invalidate token:
 #        environment:
