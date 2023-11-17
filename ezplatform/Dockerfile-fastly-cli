@@ -2,7 +2,7 @@ FROM debian
 
 RUN apt-get update && apt-get install -y wget less
 
-RUN wget https://github.com/fastly/cli/releases/download/v3.0.0/fastly_3.0.0_linux_amd64.deb
+RUN wget https://github.com/fastly/cli/releases/download/v10.2.2/fastly_10.2.2_linux_amd64.deb
 RUN apt install ./fastly_*_linux_amd64.deb
 RUN usermod -d /var/www-data www-data && mkdir /var/www-data && chown www-data:www-data /var/www-data
 
