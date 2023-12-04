@@ -1,10 +1,57 @@
 version: '3.3'
 
+
+# How to install:
+# - start containers
+# - add XDEBUG_PORT=9003 in .env
+# - in phpstorm:
+#    Settings -> PHP -> Debug
+#    - Set Debug port to same port as specified in .env
+#    - Enable "Can accept external connections"
+#
+#    Validate debugger configuration on the Web Server
+#    - Debug Validation Script
+#    - Run the command provided in "Download script command" inside public/ inside container
+#    - Url to validation script: http://127.0.0.1:8080/
+#    - Deployment server : [...]
+#    - Connections:
+#    - Type: In place
+#    - Web Server URL: http://localhost:8080
+#    - Mappings
+#      - Local path: [ windows path, ie L:\home\vl\work\support\exp45]
+#      - Web path : /var/www
+#  - Add following temporary to doc/nginx/ez_params.d/ez_rewrite_params,before "if" clause with 404:
+#    # PHP Storm Validate debugger configuration
+#    rewrite "^/phpstorm_debug.php" "/phpstorm_debug.php" break;
+#    rewrite "^/phpstorm_index.php" "/phpstorm_index.php" break;
+#
+#    location ~ \.php$ {
+#        include ez_params.d/ez_fastcgi_params;
+#
+#        # FPM socket
+#        # Possible values : unix:/var/run/php5-fpm.sock or 127.0.0.1:9000
+#        fastcgi_pass app:9000;
+#     }
+# - Restart web container: docker-compose stop web; docker-compose up -d
+# - Run ./external/ezp-toolkit/xdebug/prepare_container_for_xdebug.sh
+
+# - docker-compose exec app bash
+#   - ./external/ezp-toolkit/xdebug/internal_install_xdebug.sh && exit
+# - docker-compose stop app
+# - docker-compose up -d
+
+
 services:
   app:
-    image: ${PHP_IMAGE}-dev
+#    image: ${PHP_IMAGE}-dev
     environment:
-     - PHP_INI_ENV_xdebug__remote_host=dockerhost
-     - PHP_INI_ENV_xdebug__remote_port=9000
+      - XDEBUG_PORT=${XDEBUG_PORT-9003}
+#     - PHP_INI_ENV_xdebug__remote_host=dockerhost
+#     - PHP_INI_ENV_xdebug__remote_port=9003
     extra_hosts:
-      - "dockerhost:${DOCKERHOST}"
+      # Find running docker inside WSL, find Windows IP using : route -n | grep -m 1 "UG" | awk '{print $2}'
+      - "host.docker.internal:${DOCKERHOST}"
+# Might work with Docker Desktop (on Windows). With docker running inside WSL, it will simply point to WSL VM and that won't work
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+
