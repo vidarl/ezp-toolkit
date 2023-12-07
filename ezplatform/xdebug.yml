@@ -20,7 +20,7 @@ version: '3.3'
 #    - Mappings
 #      - Local path: [ windows path, ie L:\home\vl\work\support\exp45]
 #      - Web path : /var/www
-#  - Add following temporary to doc/nginx/ez_params.d/ez_rewrite_params,before "if" clause with 404:
+#  - Add following temporary to doc/nginx/ez_params.d/ez_rewrite_params, before "if" clause with 404:
 #    # PHP Storm Validate debugger configuration
 #    rewrite "^/phpstorm_debug.php" "/phpstorm_debug.php" break;
 #    rewrite "^/phpstorm_index.php" "/phpstorm_index.php" break;

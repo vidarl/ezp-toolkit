@@ -1,0 +1,7 @@
+version: '3.3'
+
+services:
+    app:
+        environment:
+        # Need to set this on ibexa DXP 3.3.x
+         - SOLR_CORE=collection1

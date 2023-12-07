@@ -1,0 +1,35 @@
+version: '3.3'
+
+# # Installation:
+# - Add external/ezp-toolkit/ezplatform/elasticsearch.yml to COMPOSE_FILE
+# - php bin/console ibexa:elasticsearch:put-index-template
+# - php bin/console ibexa:reindex
+#
+# If you by accident run ibexa:index before ibexa:elasticsearch:put-index-template:
+# - curl -XDELETE 'localhost:9200/*'
+# Ref. https://issues.ibexa.co/browse/IBX-3758
+#
+#
+# # Disable binary file indexing.
+# If you do not want binary file indexing ( requires java ) :
+# config/packages/app/binary_files:
+# ibexa_platform_commerce_field_types:
+#     binary_file_indexing:
+# -        enabled: true
+# +        enabled: false
+
+services:
+    app:
+        environment:
+         - SEARCH_ENGINE=elasticsearch
+         - ELASTICSEARCH_DSN=http://elasticsearch:9200
+
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+        environment:
+         - discovery.type=single-node
+        ports:
+         - "9200:9200"
+         - "9300:9300"
+        networks:
+         - backend

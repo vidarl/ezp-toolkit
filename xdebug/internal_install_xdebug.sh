@@ -32,6 +32,10 @@ if [ ! -f /usr/local/etc/php/conf.d/99-xdebug.ini ]; then
     echo "xdebug.client_port=$XDEBUG_PORT" >> /usr/local/etc/php/conf.d/99-xdebug.ini
     echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/99-xdebug.ini
     echo "" >> /usr/local/etc/php/conf.d/99-xdebug.ini
+
+    # Install validator scripts ( see Settings -> PHP -> Debug -> Validate debugger configuration on the Web Server -> Debug validaton script
+    sudo -u www-data bash -c "cd /var/www/public && curl -f -L  -o ./phpstorm_xdebug.zip "https://packages.jetbrains.team/files/p/ij/xdebug-validation-script/script/phpstorm_xdebug_validator.zip" && unzip -n ./phpstorm_xdebug.zip -d . && rm -f ./phpstorm_xdebug.zip"
+
 else
     echo "XDEBUG already installed !"
 fi
