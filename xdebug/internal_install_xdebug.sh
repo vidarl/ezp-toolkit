@@ -10,7 +10,7 @@ if [[ "$option" = "--force-reinstall" ]]; then
 fi
 
 if [ ! -f /usr/local/etc/php/conf.d/99-xdebug.ini ]; then
-    if [ ! -f /usr/local/lib/php/extensions/no-debug-non-zts-20210902/xdebug.so ] || [ "$forceReinstall" = "true" ]; then
+    if [ ! -f /tmp/xdebug-${XDEBUG_VERSION}/modules/xdebug.so ] || [ "$forceReinstall" = "true" ]; then
         echo "(Re)Installing XDEBUG"
         rm -f /tmp/xdebug.tar.gz xdebug-${XDEBUG_VERSION}
         curl https://xdebug.org/files/xdebug-${XDEBUG_VERSION}.tgz --output /tmp/xdebug.tar.gz
@@ -27,7 +27,8 @@ if [ ! -f /usr/local/etc/php/conf.d/99-xdebug.ini ]; then
         ./configure
         make
 
-        cp modules/xdebug.so /usr/local/lib/php/extensions/no-debug-non-zts-20210902
+        extensionDir=`php-config --extension-dir`
+        cp modules/xdebug.so $extensionDir/
 
         # Install validator scripts ( see Settings -> PHP -> Debug -> Validate debugger configuration on the Web Server -> Debug validaton script
         sudo -u www-data bash -c "cd /var/www/public && curl -f -L  -o ./phpstorm_xdebug.zip "https://packages.jetbrains.team/files/p/ij/xdebug-validation-script/script/phpstorm_xdebug_validator.zip" && unzip -n ./phpstorm_xdebug.zip -d . && rm -f ./phpstorm_xdebug.zip"
@@ -46,4 +47,5 @@ if [ ! -f /usr/local/etc/php/conf.d/99-xdebug.ini ]; then
 
 else
     echo "XDEBUG already installed !"
+    exit 1
 fi

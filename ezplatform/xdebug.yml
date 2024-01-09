@@ -3,23 +3,14 @@ version: '3.3'
 
 # How to install:
 # - start containers
-# - add XDEBUG_PORT=9003 in .env
+# - add the following in .env:
+# XDEBUG_PORT=9003
 # - in phpstorm:
 #    Settings -> PHP -> Debug
 #    - Set Debug port to same port as specified in .env
 #    - Enable "Can accept external connections"
-#
-#    Validate debugger configuration on the Web Server
-#    - Debug Validation Script
-#    - Run the command provided in "Download script command" inside public/ inside container
-#    - Url to validation script: http://127.0.0.1:8080/
-#    - Deployment server : [...]
-#    - Connections:
-#    - Type: In place
-#    - Web Server URL: http://localhost:8080
-#    - Mappings
-#      - Local path: [ windows path, ie L:\home\vl\work\support\exp45]
-#      - Web path : /var/www
+# - Run ./external/ezp-toolkit/xdebug/prepare_container_for_xdebug.sh
+
 #  - Add following temporary to doc/nginx/ez_params.d/ez_rewrite_params, before "if" clause with 404:
 #    # PHP Storm Validate debugger configuration
 #    rewrite "^/phpstorm_debug.php" "/phpstorm_debug.php" break;
@@ -33,13 +24,26 @@ version: '3.3'
 #        fastcgi_pass app:9000;
 #     }
 # - Restart web container: docker-compose stop web; docker-compose up -d
-# - Run ./external/ezp-toolkit/xdebug/prepare_container_for_xdebug.sh
-
-# - docker-compose exec app bash
-#   - ./external/ezp-toolkit/xdebug/internal_install_xdebug.sh && exit
-# - docker-compose stop app
-# - docker-compose up -d
-
+# - in phpstorm:
+#    - Validate debugger configuration on the Web Server
+#      - Debug Validation Script
+#      - Run the command provided in "Download script command" inside public/ inside container
+#      - Url to validation script: http://127.0.0.1:8080/
+#      - Click "Validate" button and make sure it succeeds
+#      - Once that is successfull, complete step #2 - #4 in Settings -> PHP -> Debug
+#    - Also, enable "Can accept external connections
+#    - If you are not able to make the "Validate" operation successfully, try to telnet to PHP storm on port 9003 from the app container
+#    -   You find the IP in .env (XDEBUG_PORT), example: telnet 172.24.96.1 9003
+#    - You might need to restart PHP Storm and/or computer it order to make it work
+#    - Once validation is working you should have a "default" server defined in Settings -> PHP -> Servers
+#      - set "Absolute path on the server" for the project to "/var/www"
+#      - You may (or may not) nee  to set mapping in vendor/ or src/ as well if setting break points there
+# - Every time you reboot your computer you need to rerun script as IPs on docker networks might have changed:
+#   ./external/ezp-toolkit/xdebug/prepare_container_for_xdebug.sh
+#   This script supports the following parameters:
+#     no options: enable xdebug (install first if not already installed)
+#     --disable: disable xdebug and restarts app container
+#     --force: forces a reinstall of xdebug even if it seems to be already installed
 
 services:
   app:
