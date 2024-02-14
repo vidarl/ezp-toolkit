@@ -46,6 +46,10 @@ if [[ "$version" =~ ^4.5 ]]; then
     export PHP_IMAGE=ezsystems/php:8.1-v2-node14
 fi
 
+if [[ "$version" =~ ^4.6 ]]; then
+    export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.1-node18
+fi
+
 echo Removing  container install_dxp if it already exists
 docker rm -v install_dxp || /bin/true
 
