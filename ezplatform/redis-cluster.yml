@@ -1,0 +1,120 @@
+
+# Do not include  `doc/docker/redis.yml` too, ie.. So this is sufficient:
+# COMPOSE_FILE=doc/docker/base-dev.yml:external/ezp-toolkit/ezplatform/redis-cluster.yml
+
+# CACHE_DSN will be set in .env.local by redis-cluster-init container
+# Remember to remove that CACHE_DSN entry if you ever remove this .yml from COMPOSE_FILE again....
+
+# https://symfony.com/doc/current/components/cache/adapters/redis_adapter.html
+## https://docs.platform.sh/add-services/redis.html
+## https://doc.ibexa.co/en/latest/infrastructure_and_maintenance/cache/persistence_cache/#redis
+# https://redis.io/learn/operate/redis-at-scale/scalability/redis-cluster-and-client-libraries
+# https://redis.io/learn/operate/redis-at-scale/scalability/exercise-1
+# https://symfony.com/doc/current/components/cache/adapters/redis_adapter.html
+# https://severalnines.com/blog/hash-slot-vs-consistent-hashing-redis/
+# https://medium.com/@rajatpachauri12345/what-are-redis-cluster-and-how-to-setup-redis-cluster-locally-69e87941d573
+#
+
+services:
+    app:
+        depends_on:
+            - redis0
+            - redis1
+            - redis2
+            - redis3
+            - redis4
+            - redis5
+        environment:
+            - CACHE_POOL=cache.redis
+            # CACHE_DSN will be set in .env.local by redis-cluster-init
+            - CACHE_NAMESPACE
+
+    redis0:
+        image: ${REDIS_IMAGE}
+        networks:
+            - backend
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis-cluster.conf:/etc/redis/redis-cluster.conf
+        command: /etc/redis/redis-cluster.conf
+
+    redis1:
+        image: ${REDIS_IMAGE}
+        networks:
+            - backend
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis-cluster.conf:/etc/redis/redis-cluster.conf
+        command: /etc/redis/redis-cluster.conf
+
+    redis2:
+        image: ${REDIS_IMAGE}
+        networks:
+            - backend
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis-cluster.conf:/etc/redis/redis-cluster.conf
+        command: /etc/redis/redis-cluster.conf
+
+    redis3:
+        image: ${REDIS_IMAGE}
+        networks:
+            - backend
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis-cluster.conf:/etc/redis/redis-cluster.conf
+        command: /etc/redis/redis-cluster.conf
+
+    redis4:
+        image: ${REDIS_IMAGE}
+        networks:
+            - backend
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis-cluster.conf:/etc/redis/redis-cluster.conf
+        command: /etc/redis/redis-cluster.conf
+
+    redis5:
+        image: ${REDIS_IMAGE}
+        networks:
+            - backend
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis-cluster.conf:/etc/redis/redis-cluster.conf
+        command: /etc/redis/redis-cluster.conf
+
+    redis-cluster-init:
+        image: ${REDIS_IMAGE}
+        depends_on:
+            - redis0
+            - redis1
+            - redis2
+            - redis3
+            - redis4
+            - redis5
+        networks:
+            - backend
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/redis-cluster.conf:/etc/redis/redis-cluster.conf
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/start_redis-cluster.sh:/start_redis-cluster.sh
+            - ${COMPOSE_DIR}/../../:/var/www
+        entrypoint:
+#        command: bash -c "while [ 1 ]; do echo .; sleep 10; done"
+        command: bash -c "/start_redis-cluster.sh"
+
+
+# Create cluster:
+# docker compose exec redis-cluster-init bash
+# redis-cli -h redis0 -p 7000
+# ip0=`getent hosts redis0 | awk '{ print $1 }'` ip1=`getent hosts redis1 | awk '{ print $1 }'` ip2=`getent hosts redis2 | awk '{ print $1 }'` ip3=`getent hosts redis3 | awk '{ print $1 }'` ip4=`getent hosts redis4 | awk '{ print $1 }'` ip5=`getent hosts redis5 | awk '{ print $1 }'`
+# redis-cli --cluster create ${ip0}:7000 ${ip1}:7000 ${ip2}:7000 ${ip3}:7000 ${ip4}:7000 ${ip5}:7000 --cluster-replicas 1 --cluster-yes
+# redis-cli -h redis0 -c -p 7000 cluster info
+
+# redis:?host[localhost]&host[localhost:6379]&host[/var/run/redis.sock:]&auth=my-password&redis_cluster=1
+# redis:?host[redis0:7000]&host[redis1:7000]&host[redis2:7000]&host[redis3:7000]&host[redis4:7000]&host[redis5:7000]&redis_cluster=1
+
+
+# restart cluster:
+# docker compose stop redis-cluster redis0 redis1 redis2 redis3 redis4 redis5 && docker compose rm -v redis-cluster redis0 redis1 redis2 redis3 redis4 redis5 -f
+# docker compose rm -v redis-cluster redis0 redis1 redis2 redis3 redis4 redis5
+
+# Then Create Cluster
+
+# Then set DSN:
+# export CACHE_DSN="172.16.2.2:7000?host[172.16.2.3:7000]&host[172.16.2.8:7000]&host[172.16.2.5:7000]&host[172.16.2.6:7000]&host[172.16.2.7:7000]&redis_cluster=1"
+#
+# export CACHE_DSN="${IP0}:7000?host[${IP1}:7000]&host[${IP2}:7000]&host[${IP3}:7000]&host[${IP4}:7000]&host[${IP5}:7000]&redis_cluster=1"
