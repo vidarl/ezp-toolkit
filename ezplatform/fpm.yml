@@ -1,0 +1,7 @@
+
+# external/ezp-toolkit/ezplatform/fpm.yml
+
+services:
+    app:
+        volumes:
+            - ${COMPOSE_DIR}/../../external/ezp-toolkit/ezplatform/fpm-accesslog.conf:/usr/local/etc/php-fpm.d/fpm-accesslog.conf
