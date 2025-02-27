@@ -70,6 +70,7 @@ just manually cut&paste your custom changes back into the file, or combination o
 In general, I would also recommend to put custom config in separate files whenever possible, leaving the shipped files in 
 `config/package` as unchanged as possible. That will ease future upgrades.
 
+```
 git mv config/packages/ezplatform.yaml config/packages/ibexa.yaml
 git mv config/packages/ezplatform_admin_ui.yaml config/packages/ibexa_admin_ui.yaml
 git mv config/packages/ezplatform_assets.yaml config/packages/ibexa_assets.yaml
@@ -78,16 +79,30 @@ git mv config/packages/ezplatform_http_cache.yaml config/packages/ibexa_http_cac
 git add config/packages/ibexa_jms_translation.yaml
 git mv config/packages/ezplatform_solr.yaml config/packages/ibexa_solr.yaml
 git mv config/packages/ezplatform_welcome_page.yaml config/packages/ibexa_welcome_page.yaml
+```
 
+#Now, remove any change in `config/packages/ibexa` which you do *not* want to be commited.
 
+then do
+```
 git add config/packages/ibexa.yaml config/packages/ibexa_admin_ui.yaml config/packages/ibexa_assets.yaml config/packages/ibexa_doctrine_schema.yaml config/packages/ibexa_http_cache.yaml config/packages/ibexa_solr.yaml config/packages/ibexa_welcome_page.yaml
+```
 
-# Did a short-cut for routes, causes loss of history for files, but less to type 
-( if you want to keep history, you'll need to to `mv` and `git mv` as shown with `ibexa_yaml` files. Approach also
-assumes you did *no* local changes to the files in these directories) :
+### Fix new routes
+
+Did a short-cut for routes, causes loss of history (in git) for files, but less to type.
+Approach also assumes you had *no* local changes to the files in these directories)
+( if you want to keep history, you'll need to do `mv` and `git mv` as shown with `ibexa_yaml` files ( and same way of
+merging in custom changes).  :
+
+```
 git add config/routes/ibexa*
 git rm config/routes/ezplatform*
+```
 
+Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply
+
+```
 git commit -m "composer recipes:install ibexa/oss --force -v"
 ```
 
@@ -122,7 +137,7 @@ Manually remove following from config/bundles.php
     Ibexa\Platform\Bundle\Assets\IbexaPlatformAssetsBundle::class => ['all' => true],
 ```
 
-# At this time you'll get following error on `clear:cache` : 
+At this time you'll get following error on `clear:cache` : 
 
 `Type "DomainContentByIdentifierConnection" inherited by "UserGroupContentConnection" not found.`
 This is due to graphql schema...
@@ -135,7 +150,7 @@ rm -Rf config/graphql/types/ezplatform
 php bin/console ibexa:graphql:generate-schema
 ```
 
-# Fix yarn
+### Fix yarn
 
 At this time yarn will fail with : Cannot find package '@babel/plugin-proposal-class-properties' imported from /var/www/babel-virtual-resolve-base.js
 Get yarn from plain 4.0.8 install, stored in upgrade/yarn.lock.408
@@ -146,19 +161,20 @@ yarn install
 bin/console ibexa:encore:compile --config-name app
 ```
 
-Finaly run post install:
+Run post install:
 
 ```
 composer run post-install-cmd
 ```
 
-## Optional / Depending on custom code:
+### Optional / Depending on custom code:
 ```
 composer require ibexa/compatibility-layer
 ```
 
 Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply 
 
+## Upgrade to 4.1
 
 ```
 composer require ibexa/oss:4.1.0 --with-all-dependencies --no-scripts
@@ -174,6 +190,8 @@ composer recipes:install ibexa/oss --force -v
 
 Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply
 
+## Upgrade to 4.2
+
 ```
 composer require ibexa/oss:4.2.4 --with-all-dependencies --no-scripts
 composer recipes:install ibexa/oss --force -v
@@ -187,12 +205,16 @@ FYI : `yarn encore dev --config-name app` will fail. You may try to use yarn.loc
 
 Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply
 
+## Upgrade to 4.3
+
 ```
 composer require ibexa/oss:4.3.5 --with-all-dependencies --no-scripts
 composer recipes:install ibexa/oss --force -v
 ```
 
 Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply
+
+## Upgrade to 4.4
 
 ```
 composer require ibexa/oss:4.4.4 --with-all-dependencies --no-scripts
@@ -206,18 +228,18 @@ composer recipe:install --force --reset -- oneup/flysystem-bundle
 git commit config/packages/oneup_flysystem.yaml -m 'composer recipe:install --force --reset -- oneup/flysystem-bundle'
 ```
 
-# skip on OSS:
-# "Remove ibexa/commerce-* packages with dependencies"
+Skip on OSS: "Remove ibexa/commerce-* packages with dependencies"
 
 Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply
+
+## Upgrade to 4.5
 
 ```
 composer require ibexa/oss:4.5.7 --with-all-dependencies --no-scripts
 composer recipes:install ibexa/oss --force -v
 ```
 
-# skip on OSS:
-# "Define measurement base unit in configuration"
+skip on OSS: "Define measurement base unit in configuration"
 
 
 ```
@@ -226,7 +248,9 @@ git commit config/packages/ibexa_admin_ui.yaml package.json -m "composer recipes
 
 Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply
 
-Upgrade to yarn >= 18.0.0
+## Upgrade to 4.6
+
+Upgrade to node >= 18.0.0
 
 ```
 composer require ibexa/oss:4.6.16 --with-all-dependencies --no-scripts
@@ -238,8 +262,7 @@ composer run post-install-cmd
 
 ```
 
-
-Skip all config changes for 4.6.0 as they do not apply to OSS
+Skip all config changes  for 4.6.0 mentioned in upgrade doc as they do not apply to OSS
 
 ```
 composer config extra.runtime.error_handler "\\Ibexa\\Contracts\\Core\\MVC\\Symfony\\ErrorHandler\\Php82HideDeprecationsErrorHandler"
@@ -247,5 +270,3 @@ composer dump-autoload
 ```
 
 Do a `git status` verify that you have commit all needed changes. Discard changes you do not want to apply
-
-
