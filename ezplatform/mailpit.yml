@@ -1,0 +1,16 @@
+
+services:
+    mailpit:
+        image: axllent/mailpit:v1.23
+        environment:
+            - REMOTE_URL=http://web:80
+        networks:
+            - backend
+        ports:
+            - "8025:8025"
+        depends_on:
+            - web
+
+    app:
+        environment:
+            - MAILER_URL=smtp://mailpit:1025
