@@ -1,6 +1,11 @@
 version: '3.3'
 
-# In order to build varnish container, change doc/docker/Dockerfile-varnish b/doc/docker/Dockerfile-varnish
+# You need to edit varnish5.vcl in order to avoid CORS problems and being able to load images:
+# After the change, varnish container needs to be restarted:
+# -set req.http.X-Forwarded-Port = "80";
+# +set req.http.X-Forwarded-Port = "8081";
+
+# Outdated ( no longer apply) : In order to build varnish container, change doc/docker/Dockerfile-varnish b/doc/docker/Dockerfile-varnish
 #-        && apt-get install -q -y --allow-unauthenticated --no-install-recommends varnish=6.0.11-1~bullseye $buildDeps \
 #+        && apt-get install -q -y --allow-unauthenticated --no-install-recommends varnish=6.0.12-1~bullseye $buildDeps \
 
