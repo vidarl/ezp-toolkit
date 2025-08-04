@@ -13,6 +13,12 @@ if [ "$version" == "" ]; then
     version=3.3.20
 fi
 
+if [[ "$version" =~ ^([0-9]+\.[0-9]+)\.* ]]; then
+  MAJOR_VERSION=${BASH_REMATCH[1]}
+else
+  echo Invalid version provided
+  exit 1
+fi
 
 # Maybe this one is for <=3.2 ?
 export PHP_IMAGE=ezsystems/php:7.4-v2-node12
@@ -48,6 +54,10 @@ fi
 
 if [[ "$version" =~ ^4.6 ]]; then
     export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.2-node18
+fi
+
+if [[ "$version" =~ ^5.0 ]]; then
+    export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.3-node22
 fi
 
 echo Removing  container install_dxp if it already exists
@@ -107,7 +117,7 @@ git commit -m "Initial commit - create-project"
 
 
 composer_container install --no-scripts
-composer_container require ibexa/docker --no-scripts
+composer_container require ibexa/docker:^$MAJOR_VERSION --no-scripts
 # Looks like the "--no-scripts" also prevents the recipes for ibexa/docker to execute properly
 composer_container recipes:install ibexa/docker --force
 
@@ -131,7 +141,7 @@ docker compose exec --user www-data app composer install
 
 patch_dxp44
 
-docker compose exec --user www-data app php bin/console ibexa:install
+docker compose exec --user www-data app php bin/console ibexa:install --no-interaction
 docker compose exec --user www-data app php bin/console ibexa:graphql:generate-schema
 
 echo 'mysqldump -u $DATABASE_USER --password=$DATABASE_PASSWORD -h $DATABASE_HOST --add-drop-table --extended-insert  --protocol=tcp $DATABASE_NAME > doc/docker/entrypoint/mysql/2_dump.sql' > create_mysql_dump.sh
