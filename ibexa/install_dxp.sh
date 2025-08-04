@@ -126,21 +126,21 @@ echo "COMPOSE_PROJECT_NAME=$project_name" >> .env
 echo -e "PHP_INI_ENV_memory_limit=600M\n" >> .env
 
 
-docker-compose up -d --remove-orphans
-docker-compose exec --user www-data app composer install
+docker compose up -d --remove-orphans
+docker compose exec --user www-data app composer install
 
 patch_dxp44
 
-docker-compose exec --user www-data app php bin/console ibexa:install
-docker-compose exec --user www-data app php bin/console ibexa:graphql:generate-schema
+docker compose exec --user www-data app php bin/console ibexa:install
+docker compose exec --user www-data app php bin/console ibexa:graphql:generate-schema
 
 echo 'mysqldump -u $DATABASE_USER --password=$DATABASE_PASSWORD -h $DATABASE_HOST --add-drop-table --extended-insert  --protocol=tcp $DATABASE_NAME > doc/docker/entrypoint/mysql/2_dump.sql' > create_mysql_dump.sh
-docker-compose exec --user www-data app bash create_mysql_dump.sh
+docker compose exec --user www-data app bash create_mysql_dump.sh
 rm create_mysql_dump.sh
 
 git commit .env -m "Added modifications to .env"
 
-docker-compose exec --user www-data app composer ibexa:setup --platformsh
+docker compose exec --user www-data app composer ibexa:setup --platformsh
 git add .platform.app.yaml .platform bin/platformsh_prestart_cacheclear.sh
 if [[ "$version" =~ ^4.1 ]]; then
     git add config/packages/http.yaml
@@ -148,5 +148,5 @@ fi
 
 git commit  -m "Installed platform.sh scripts"
 
-docker-compose exec --user www-data app composer run post-install-cmd
+docker compose exec --user www-data app composer run post-install-cmd
 
