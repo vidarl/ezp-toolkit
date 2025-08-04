@@ -1,0 +1,32 @@
+FROM solr:9.8
+
+# Copy solr bundle from dist to build context
+COPY vendor/ibexa/solr /opt/ibexa-solr
+
+USER root
+RUN apt-get update && apt-get install patch && mkdir /opt/solr/server/ibexa && chown solr:solr /opt/solr/server/ibexa
+RUN cd /opt/solr/docker/scripts/ && patch -p0 <<'EOF'
+--- solr-create.org    2025-08-04 13:16:47.103476353 +0000
++++ solr-create        2025-08-04 13:18:52.460850200 +0000
+@@ -47,8 +47,8 @@
+   exit 1
+ fi
+
+-coresdir=/var/solr/data
+-CORE_DIR="$coresdir/$CORE_NAME"
++# cores get created in SOLR_HOME
++CORE_DIR="${SOLR_HOME:-/var/solr/data}/$CORE_NAME"
+
+ if [[ -d $CORE_DIR ]]; then
+     echo "Directory $CORE_DIR exists; skipping core creation"
+EOF
+
+USER solr
+RUN cd /opt/ibexa-solr && ./bin/generate-solr-config.sh --solr-version=9.8 --destination-dir=/opt/solr/server/ibexa/template/conf --solr-install-dir=/opt/solr
+RUN rm -f /opt/solr/server/template/conf/schema.xml /opt/solr/server/template/conf/custom-fields-types.xml
+
+# Set our core config as home
+ENV SOLR_HOME /opt/solr/server/ibexa
+
+# Make sure core is created on startup
+CMD ["solr-create", "-c", "collection1", "-d", "/opt/solr/server/ibexa/template"]
