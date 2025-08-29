@@ -4,6 +4,7 @@ services:
         volumes:
             - ${COMPOSE_DIR}/../../:/var/www:cached
             - ${COMPOSER_HOME}:/root/.composer:cached
+            - ~/.ssh:/var/www/.ssh
         depends_on:
             - db
         environment:
@@ -27,6 +28,7 @@ services:
             - PUBLIC_SERVER_URI
             - HTTPCACHE_VARNISH_INVALIDATE_TOKEN
             - XDEBUG_CONFIG
+            - COMPOSER_HOME=~/.composer
         networks:
             - backend
 
@@ -35,6 +37,7 @@ services:
         volumes:
             - ${COMPOSE_DIR}/../../:/var/www:cached
             - ${COMPOSER_HOME}:/root/.composer:cached
+            - ~/.ssh:/var/www/.ssh
         depends_on:
             - db
         environment:
@@ -58,6 +61,7 @@ services:
             - PUBLIC_SERVER_URI
             - HTTPCACHE_VARNISH_INVALIDATE_TOKEN
             - XDEBUG_CONFIG
+            - COMPOSER_HOME=~/.composer
         networks:
             - backend
 
@@ -66,6 +70,7 @@ services:
         volumes:
             - ${COMPOSE_DIR}/../../:/var/www:cached
             - ${COMPOSER_HOME}:/root/.composer:cached
+            - ~/.ssh:/var/www/.ssh
         depends_on:
             - db
         environment:
@@ -89,6 +94,7 @@ services:
             - PUBLIC_SERVER_URI
             - HTTPCACHE_VARNISH_INVALIDATE_TOKEN
             - XDEBUG_CONFIG
+            - COMPOSER_HOME=~/.composer
         networks:
             - backend
 
@@ -97,6 +103,7 @@ services:
         volumes:
             - ${COMPOSE_DIR}/../../:/var/www:cached
             - ${COMPOSER_HOME}:/root/.composer:cached
+            - ~/.ssh:/var/www/.ssh
         depends_on:
             - db
         environment:
@@ -120,6 +127,7 @@ services:
             - PUBLIC_SERVER_URI
             - HTTPCACHE_VARNISH_INVALIDATE_TOKEN
             - XDEBUG_CONFIG
+            - COMPOSER_HOME=~/.composer
         networks:
             - backend
 
@@ -128,6 +136,7 @@ services:
         volumes:
             - ${COMPOSE_DIR}/../../:/var/www:cached
             - ${COMPOSER_HOME}:/root/.composer:cached
+            - ~/.ssh:/var/www/.ssh
         depends_on:
             - db
         environment:
@@ -151,5 +160,6 @@ services:
             - PUBLIC_SERVER_URI
             - HTTPCACHE_VARNISH_INVALIDATE_TOKEN
             - XDEBUG_CONFIG
+            - COMPOSER_HOME=~/.composer
         networks:
             - backend
