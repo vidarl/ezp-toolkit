@@ -1,0 +1,4 @@
+services:
+    app:
+        extra_hosts:
+          - "host.docker.internal:${DOCKERHOST}"

@@ -1,5 +1,10 @@
 version: '3.3'
 
+# Info : Both native PHP Storm on Windows and PHP Storm with remove development (WSL) is supported. See comments below
+# extra_hosts section for config hints.
+
+# If you want to debug integration tests which creates container cache in /tmp, you also need to include ssh.yml
+# as that will also mount /tmp inside the container. You also need to map /tmp in Settings -> PHP -> Servers -> Path Mappings.
 
 # How to install:
 # - start containers
@@ -44,6 +49,12 @@ version: '3.3'
 #     no options: enable xdebug (install first if not already installed)
 #     --disable: disable xdebug and restarts app container
 #     --force: forces a reinstall of xdebug even if it seems to be already installed
+#
+# When running xdebug session for tests, set the following environment variables:
+#  export XDEBUG_MODE=debug XDEBUG_SESSION=1 PHP_IDE_CONFIG="serverName=localhost"
+# See https://www.jetbrains.com/help/phpstorm/2025.2/debugging-a-php-cli-script.html?php.debugging.cli_script&keymap=Windows#-wux1l7_127
+# (Value of serverName is the name of Settings -> PHP -> Servers -> Name)
+
 
 services:
   app:
@@ -53,9 +64,19 @@ services:
 #     - PHP_INI_ENV_xdebug__remote_host=dockerhost
 #     - PHP_INI_ENV_xdebug__remote_port=9003
     extra_hosts:
-      # Find running docker inside WSL, find Windows IP using : route -n | grep -m 1 "UG" | awk '{print $2}'
-      - "host.docker.internal:${DOCKERHOST}"
-# Might work with Docker Desktop (on Windows). With docker running inside WSL, it will simply point to WSL VM and that won't work
-#    extra_hosts:
-#      - "host.docker.internal:host-gateway"
+      # If running PHPStorm on Windows and php inside WSL. Then PHP inside WSL needs to be able to reach your PHPStorm
+      # running on windows.
+      # Find IP of Windows host from within Linux VM(WSL) using : route -n | grep -m 1 "UG" | awk '{print $2}'
+      # (this is done automatically by prepare_container_for_xdebug.sh)
+      # Then set host.docker.internal to resolve to that IP. This is done in external/ezp-toolkit/ezplatform/xdebug-reachwindowshost.yml
+      # On such setup, include that yml file too, which will override this setting.
 
+      # If running PHPStorm on Windows with "Remote development" to WSL, then PHP inside WSL needs to be able to reach your PHPStorm
+      # agent running inside WSL. In other words, PHP inside the container needs to reach the docker host.
+      # In this config, the DOCKERHOST variable defined in .env is really not used( only host.docker.internal instead)
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+        # /tmp used for xdebugging integrations tests
+        # After starting container, run "sudo chmod a+t external/tmp; sudo chmod a+w external/tmp/"
+        - ${COMPOSE_DIR}/../../external/tmp:/tmp

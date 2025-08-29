@@ -9,7 +9,7 @@ if [[ "$option" = "--force-reinstall" ]]; then
     forceReinstall="true"
 fi
 
-if [ ! -f /usr/local/etc/php/conf.d/99-xdebug.ini ]; then
+if [ ! -f /usr/local/etc/php/conf.d/99-xdebug.ini ] || [ "$forceReinstall" = "true" ]; then
     if [ ! -f /tmp/xdebug-${XDEBUG_VERSION}/modules/xdebug.so ] || [ "$forceReinstall" = "true" ]; then
         echo "(Re)Installing XDEBUG"
         rm -f /tmp/xdebug.tar.gz xdebug-${XDEBUG_VERSION}
