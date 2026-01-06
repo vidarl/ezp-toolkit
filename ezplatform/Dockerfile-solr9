@@ -1,4 +1,4 @@
-FROM solr:9.8
+FROM solr:9.10
 
 # Copy solr bundle from dist to build context
 COPY vendor/ibexa/solr /opt/ibexa-solr
