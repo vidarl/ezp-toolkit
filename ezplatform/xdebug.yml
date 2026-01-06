@@ -5,6 +5,10 @@ version: '3.3'
 
 # If you want to debug integration tests which creates container cache in /tmp, you also need to include ssh.yml
 # as that will also mount /tmp inside the container. You also need to map /tmp in Settings -> PHP -> Servers -> Path Mappings.
+# The mapping you need to setup (example with remote development with WSL):
+# [linux_path_to_project ie /home/user/project/ibexadxp] --> /var/www
+# .../external/tmp --> /tmp
+# .../public --> /var/www/public
 
 # How to install:
 # - start containers
