@@ -1,0 +1,14 @@
+
+# Remember to include the default solr config file, ie:
+# +COMPOSE_FILE=doc/docker/base-dev.yml:doc/docker/solr.yml:external/ezp-toolkit/ezplatform/solr8.yml:external/ezp-toolkit/ezplatform/solr-dev.yml
+
+# In order to apply this config:
+# - For developing solr config, First start solr so that core is created, then:
+# - mkdir -p external/docker/solr/
+# - docker compose cp solr:/opt/solr/server/ibexa/collection1 external/docker/solr/collection1 & chmod a+w -R external/docker/solr/collection1
+# Then enable solr-dev.yml
+
+services:
+    solr:
+        volumes:
+            - ${COMPOSE_DIR}/../../external/docker/solr/collection1:/opt/solr/server/ibexa/collection1:cached
