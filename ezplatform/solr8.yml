@@ -1,7 +1,14 @@
-version: '3.3'
+
+# Remember to include the default solr config file, ie:
+# -COMPOSE_FILE=doc/docker/base-dev.yml
+# +COMPOSE_FILE=doc/docker/base-dev.yml:doc/docker/solr.yml:external/ezp-toolkit/ezplatform/solr8.yml
 
 services:
+    solr:
+        build:
+            context: ../../
+            dockerfile: external/ezp-toolkit/ezplatform/Dockerfile-solr8new
+#        command: bash -c "while [ 1 ]; do echo .; sleep 10; done"
     app:
         environment:
-        # Need to set this on ibexa DXP 3.3.x
-         - SOLR_CORE=collection1
+            - SOLR_CORE=collection1

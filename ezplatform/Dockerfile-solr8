@@ -1,22 +1,43 @@
-FROM solr:6-alpine
+FROM solr:8.11
 
-# Copy solr config from the version used by eZ Platform
-COPY vendor/ibexa/solr/src/lib/Resources/config/solr/ /opt/solr/server/tmp
+# Copy solr bundle from dist to build context
+COPY vendor/ibexa/solr /opt/ibexa-solr
 
-# Prepare config
-RUN mkdir -p /opt/solr/server/ez/template \
- && cp -R /opt/solr/server/tmp/* /opt/solr/server/ez/template \
- && cp /opt/solr/server/solr/configsets/basic_configs/conf/currency.xml /opt/solr/server/ez/template \
- && cp /opt/solr/server/solr/configsets/basic_configs/conf/solrconfig.xml /opt/solr/server/ez/template \
- && cp /opt/solr/server/solr/configsets/basic_configs/conf/stopwords.txt /opt/solr/server/ez/template \
- && cp /opt/solr/server/solr/configsets/basic_configs/conf/synonyms.txt /opt/solr/server/ez/template \
- && cp /opt/solr/server/solr/configsets/basic_configs/conf/elevate.xml /opt/solr/server/ez/template \
- && cp /opt/solr/server/solr/solr.xml /opt/solr/server/ez \
- && sed -i.bak '/<updateRequestProcessorChain name="add-unknown-fields-to-the-schema">/,/<\/updateRequestProcessorChain>/d' /opt/solr/server/ez/template/solrconfig.xml \
- && sed -ie 's/${solr.autoSoftCommit.maxTime:-1}/${solr.autoSoftCommit.maxTime:20}/' /opt/solr/server/ez/template/solrconfig.xml
+USER root
+RUN apt-get update && apt-get install patch && mkdir /opt/solr/server/ibexa && chown solr:solr /opt/solr/server/ibexa
+RUN echo <<'EOF'
+kake1
+kake2
+kake3
+EOF
+RUN cd /opt/docker-solr/scripts/ && patch -p0 <<'EOF'
+--- solr-create.org     2026-03-11 15:54:29.537983590 +0100
++++ solr-create 2026-03-11 15:55:01.348842605 +0100
+@@ -36,7 +36,8 @@
+ fi
+
+ coresdir=/var/solr/data
+-CORE_DIR="$coresdir/$CORE_NAME"
++# cores get created in SOLR_HOME
++CORE_DIR="${SOLR_HOME:-/var/solr/data}/$CORE_NAME"
+
+ if [[ -d $CORE_DIR ]]; then
+     echo "Directory $CORE_DIR exists; skipping core creation"
+EOF
+
+USER solr
+RUN cd /opt/ibexa-solr && ./bin/generate-solr-config.sh --solr-version=8.11 --destination-dir=/opt/solr/server/ibexa/template/conf --solr-install-dir=/opt/solr
+# 8.11 hack, solr needs to run during create-core. And it need a valid solr.xml for starting:
+RUN cp /opt/solr/server/ibexa/template/solr.xml  /opt/solr/server/ibexa/
+
+#RUN cd /opt/ibexa-solr && ./bin/generate-solr-config.sh --solr-version=8.11 --destination-dir=/opt/solr/server/ibexa/conf --solr-install-dir=/opt/solr
+RUN rm -f /opt/solr/server/template/conf/schema.xml /opt/solr/server/template/conf/custom-fields-types.xml
 
 # Set our core config as home
-ENV SOLR_HOME /opt/solr/server/ez
+ENV SOLR_HOME /opt/solr/server/ibexa
 
 # Make sure core is created on startup
-CMD ["solr-create", "-c", "collection1", "-d", "/opt/solr/server/ez/template"]
+CMD ["solr-create", "-c", "collection1", "-d", "/opt/solr/server/ibexa/template"]
+
+#ENTRYPOINT []
+#CMD ["bash"]
