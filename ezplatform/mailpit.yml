@@ -13,4 +13,7 @@ services:
 
     app:
         environment:
+            # 4.6:
             - MAILER_URL=smtp://mailpit:1025
+            # 5.x:
+            - MAILER_DSN=smtp://mailpit:1025
