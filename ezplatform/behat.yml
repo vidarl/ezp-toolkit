@@ -1,0 +1,56 @@
+#
+# Setup described here: https://ibexa.atlassian.net/wiki/spaces/ENG/pages/5374030/Browser+testing+setup
+#
+# Basically, in addition to include this behat.yml file, you need to do the following:
+# $ composer require --dev ibexa/behat:~4.6.x-dev --no-scripts --no-plugins
+# additionally it is required to install recipes manually:
+# $ composer recipes:install ibexa/behat --force --reset
+# $ composer update
+#
+# Optionally:
+# $ cp behat_ibexa_experience.yaml behat.yml
+#
+# $ rm -rf var/cache/
+# $ composer run post-install-cmd
+#
+# run some behat tests:
+# $ vendor/bin/behat --profile=browser --suite=admin-ui
+# $ vendor/bin/behat --profile=browser --suite=page-builder
+#
+# Connect to vnc to see what is going on:
+# $ sudo apt-get install xtightvncviewer
+# $ vncviewer localhost:5900
+
+services:
+    selenium:
+        image: selenium/standalone-chrome:124.0-20250202
+        container_name: selenium
+        ports:
+            - "7900:7900"
+            - "4444:4444"
+            - "5900:5900"
+        environment:
+            SE_VNC_NO_PASSWORD: "1"
+            SE_NODE_MAX_SESSIONS: "2"
+            SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
+
+            WEB_HOST: "http://web"
+            MINK_DEFAULT_SESSION: "selenium"
+            SELENIUM_HOST: "http://0.0.0.0:4444"
+            CHROMIUM_HOST: "http://chromium:9222"
+        shm_size: "2g"
+#        extra_hosts:
+#            - "example.com:<your_ip_address>"
+        restart: unless-stopped
+        networks:
+            - backend
+
+    app:
+        environment:
+            APP_ENV: "behat"
+            APP_DEBUG: "1"
+            DISABLE_BEHAT_SCREENSHOT_LIMIT: "1"
+            WEB_HOST: "http://web"
+            MINK_DEFAULT_SESSION: "selenium"
+            SELENIUM_HOST: "http://selenium:4444"
+            #CHROMIUM_HOST: "http://chromium:9222"
