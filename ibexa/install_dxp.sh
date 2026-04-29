@@ -4,20 +4,26 @@
 
 set -e
 
+# For debugging purposes, outputs each line before being executed
+# set -o xtrace
+
+
 flavour=$1
 project_name=$2
 target_dir=$PWD/$3
 version=$4
 
+DEV_INSTALL=false
+
 if [ "$version" == "" ]; then
     version=3.3.20
 fi
 
-if [[ "$version" =~ ^([0-9]+\.[0-9]+)\.* ]]; then
-  MAJOR_VERSION=${BASH_REMATCH[1]}
+if [[ "$version" =~ ^~?([0-9]+\.[0-9]+).*-dev$ ]] || [[ "$version" =~ ^([0-9]+\.[0-9]+)\.* ]]; then
+    MAJOR_VERSION=${BASH_REMATCH[1]}
 else
-  echo Invalid version provided
-  exit 1
+    echo Invalid version provided : $version
+    exit 1
 fi
 
 # Maybe this one is for <=3.2 ?
@@ -56,7 +62,11 @@ if [[ "$version" =~ ^4.6 ]]; then
     export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.3-node18
 fi
 
-if [[ "$version" =~ ^5.0 ]]; then
+
+if [[ "$version" == "~5.0.x-dev" ]]; then
+    export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.3-node22
+    DEV_INSTALL=true
+elif [[ "$version" =~ ^5.0 ]]; then
     export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.3-node22
 fi
 
@@ -88,7 +98,11 @@ function patch_dxp44() {
     fi
 }
 
-composer_container create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} /var/www
+if [[ "$DEV_INSTALL" == "true" ]]; then
+    composer_container create-project ibexa/website-skeleton:${version} /var/www
+else
+    composer_container create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} /var/www
+fi
 
 if [[ "$version" =~ ^4.0 ]]; then
     composer_container config extra.symfony.endpoint "https://api.github.com/repos/ibexa/recipes/contents/index.json?ref=flex/main"
@@ -109,6 +123,11 @@ fi
 
 cd $target_dir
 
+if [[ "$DEV_INSTALL" == true ]]; then
+    composer_container config repositories.ibexa composer https://updates.ibexa.co
+    composer_container require ibexa/${flavour}:${version} -W --no-scripts
+fi
+
 echo -e "\n### Local additions\npublic/assets\nide-twig.json\n#yarn\n.cache" >> .gitignore
 
 git init
@@ -117,7 +136,12 @@ git commit -m "Initial commit - create-project"
 
 
 composer_container install --no-scripts
-composer_container require ibexa/docker:^$MAJOR_VERSION --no-scripts
+if [[ "$DEV_INSTALL" == true ]]; then
+    composer_container require ibexa/docker:${version} --no-scripts
+else
+    composer_container require ibexa/docker:^$MAJOR_VERSION --no-scripts
+fi
+
 # Looks like the "--no-scripts" also prevents the recipes for ibexa/docker to execute properly
 composer_container recipes:install ibexa/docker --force
 
@@ -137,10 +161,19 @@ echo -e "PHP_INI_ENV_memory_limit=600M\n" >> .env
 
 
 docker compose up -d --remove-orphans
-docker compose exec --user www-data app composer install
+
+if [[ "$DEV_INSTALL" == true ]]; then
+    docker compose exec --user www-data app composer install --no-scripts
+else
+    docker compose exec --user www-data app composer install
+fi
 
 patch_dxp44
 
+if [[ "$DEV_INSTALL" == true ]]; then
+    docker compose exec --user www-data app composer recipes:install ibexa/${flavour} --force --reset
+    docker compose exec --user www-data app composer run post-update-cmd
+fi
 docker compose exec --user www-data app php bin/console ibexa:install --no-interaction
 docker compose exec --user www-data app php bin/console ibexa:graphql:generate-schema
 
