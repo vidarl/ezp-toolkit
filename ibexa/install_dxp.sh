@@ -13,7 +13,9 @@ project_name=$2
 target_dir=$PWD/$3
 version=$4
 
+# example : ./ezp-toolkit/ibexa/install_dxp.sh experience exp50dev exp50dev '~5.0.x-dev'
 DEV_INSTALL=false
+
 
 if [ "$version" == "" ]; then
     version=3.3.20
@@ -87,8 +89,28 @@ function composer_container() {
         extra_param="--workdir /var/www "
     fi
 
-    echo docker run $extra_param --rm --name install_dxp -t -i -u www-data --entrypoint composer --mount type=bind,source="$target_dir",target=/var/www $PHP_IMAGE $@
-    docker run $extra_param --rm --name install_dxp -t -i -u www-data --entrypoint composer --mount type=bind,source="$target_dir",target=/var/www $PHP_IMAGE $@
+    echo docker run $extra_param --rm \
+      --name install_dxp \
+      -t -i \
+      -u www-data \
+      --mount type=bind,source="$target_dir",target=/var/www \
+      --mount type=bind,source="$HOME/www-data",target=/home/www-data \
+      --mount type=bind,source="$HOME/.ssh",target=/home/www-data/.ssh \
+      -e HOME=/home/www-data \
+      --entrypoint composer \
+      -e COMPOSER_HOME=/home/www-data/.composer \
+      $PHP_IMAGE \"$@\"
+    docker run $extra_param --rm \
+      --name install_dxp \
+      -t -i \
+      -u www-data \
+      --mount type=bind,source="$target_dir",target=/var/www \
+      --mount type=bind,source="$HOME/www-data",target=/home/www-data \
+      --mount type=bind,source="$HOME/.ssh",target=/home/www-data/.ssh \
+      -e HOME=/home/www-data \
+      --entrypoint composer \
+      -e COMPOSER_HOME=/home/www-data/.composer \
+      $PHP_IMAGE "$@"
 }
 
 function patch_dxp44() {
@@ -98,6 +120,16 @@ function patch_dxp44() {
     fi
 }
 
+function check_homedir_skeleton() {
+    if [ ! -f "$HOME/www-data/.composer/auth.json" ]; then
+        echo "Missing $HOME/www-data/.composer/auth.json"
+        echo "Create $HOME/www-data/.composer and add your Composer auth.json file."
+        exit 1
+    fi
+}
+
+check_homedir_skeleton
+
 if [[ "$DEV_INSTALL" == "true" ]]; then
     composer_container create-project ibexa/website-skeleton:${version} /var/www
 else
@@ -106,11 +138,6 @@ fi
 
 if [[ "$version" =~ ^4.0 ]]; then
     composer_container config extra.symfony.endpoint "https://api.github.com/repos/ibexa/recipes/contents/index.json?ref=flex/main"
-fi
-
-
-if [ -f ~/.composer/auth.json ]; then
-    cp ~/.composer/auth.json $target_dir
 fi
 
 
