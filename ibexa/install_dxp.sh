@@ -136,6 +136,9 @@ else
     composer_container create-project --no-install --no-scripts ibexa/${flavour}-skeleton:${version} /var/www
 fi
 
+# Prevent yarn install to fail on slow connections
+composer_container config process-timeout 1800
+
 if [[ "$version" =~ ^4.0 ]]; then
     composer_container config extra.symfony.endpoint "https://api.github.com/repos/ibexa/recipes/contents/index.json?ref=flex/main"
 fi
@@ -177,6 +180,10 @@ fi
 
 # Looks like the "--no-scripts" also prevents the recipes for ibexa/docker to execute properly
 composer_container recipes:install ibexa/docker --force
+
+# Like not needed.. Timeout in composer is increased already
+# echo "Extending yarn network timeout" :
+# echo "network-timeout 1000000" >> .yarnrc
 
 git add .env composer.json composer.lock symfony.lock bin/vhost.sh doc
 git commit -m "Installed ibexa/docker"
