@@ -61,7 +61,7 @@ if [[ "$version" =~ ^4.5 ]]; then
 fi
 
 if [[ "$version" =~ ^4.6 ]]; then
-    export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.3-node18
+    export PHP_IMAGE=ghcr.io/ibexa/docker/php:8.4-node22
 fi
 
 
