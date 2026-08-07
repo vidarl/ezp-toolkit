@@ -192,6 +192,7 @@ echo -e "\n\n### Local modifications ###" >> .env
 echo "PHP_IMAGE=$PHP_IMAGE" >> .env
 echo "COMPOSE_PROJECT_NAME=$project_name" >> .env
 echo -e "PHP_INI_ENV_memory_limit=600M\n" >> .env
+echo "COMPOSE_FILE=doc/docker/base-dev.yml:external/ezp-toolkit/ezplatform/ssh.yml" >> .env
 
 
 docker compose up -d --remove-orphans
