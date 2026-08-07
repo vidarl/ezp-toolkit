@@ -228,3 +228,8 @@ git commit  -m "Installed platform.sh scripts"
 
 docker compose exec --user www-data app composer run post-install-cmd
 
+echo -e "\nconfig/graphql/types/ibexa/\ndoc/docker/entrypoint/mysql/2_dump.sql\nexternal/" >> .gitignore
+git commit -m "Updated .gitignore" .gitignore
+
+git add .nvmrc config/packages/http.yaml src/Migrations/
+git commit -m "Added additional files created during installation"
